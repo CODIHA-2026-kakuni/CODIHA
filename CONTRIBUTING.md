@@ -130,15 +130,7 @@ git push
 - 節目ごとに `git tag v0.1.0` のようにタグを打つ。
 - 必要に応じて `release/` ブランチやGitHub Releasesページを活用する。
 
-## 9. GitHub側のブランチ保護設定（推奨）
-
-リポジトリ管理者は、GitHubの `Settings > Branches` で `main` に以下を設定することを推奨します。
-
-- `Require a pull request before merging`（直接pushの禁止）
-- `Require approvals`（最低1件のレビュー承認を必須化）
-- `Require status checks to pass before merging`（CIを導入した場合）
-
-## 10. このルールブックについて
+## 9. このルールブックについて
 
 - ルールは一度決めたら終わりではなく、運用しながら**チームで見直してよい**。
 - 変更したいときは、このファイル自体をPRで更新し、チームでレビューして合意を取ってからマージする。
