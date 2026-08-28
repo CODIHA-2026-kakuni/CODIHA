@@ -1,0 +1,64 @@
+# =====================================================================
+# CODIHA 用 compose.yaml（汎用テンプレート）
+#
+# 想定: フロントエンド(Node.js/Vite等)のみのシンプルな構成。
+# バックエンドやDBが必要になったら、下部のコメントを参考にサービスを追加してください。
+#
+# 使い方:
+#   docker compose up          # 開発サーバー起動（ホットリロード）
+#   docker compose up --build  # Dockerfile変更後の再ビルド込みで起動
+#   docker compose down        # 停止・コンテナ削除
+# =====================================================================
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: dev   # 開発用ステージを使用（本番確認したい場合は "production" に変更）
+    ports:
+      - "5173:5173"   # Vite想定。Next.js等の場合は "3000:3000" に変更
+    volumes:
+      - .:/app                # ソースをマウントしてホットリロードを有効化
+      - /app/node_modules      # ホスト側のnode_modulesで上書きされないようにする
+    environment:
+      - NODE_ENV=development
+      # - VITE_API_BASE_URL=http://localhost:8000  # バックエンドAPIを使う場合の例
+    # .env ファイルを使う場合は以下を有効化
+    # env_file:
+    #   - .env
+    stdin_open: true
+    tty: true
+
+# ---------------------------------------------------------------------
+# バックエンドAPI（Node.js/Express や Python/Flask等）を追加する場合の例:
+#
+#   backend:
+#     build:
+#       context: ./backend
+#       dockerfile: Dockerfile
+#     ports:
+#       - "8000:8000"
+#     environment:
+#       - DATABASE_URL=postgres://user:password@db:5432/codiha
+#     depends_on:
+#       - db
+#
+# 位置情報（回収ボックスの緯度経度等）を保存するDBが必要になった場合の例
+# （PostGISはPostgreSQLに地理空間データ用の拡張を追加したもの）:
+#
+#   db:
+#     image: postgis/postgis:16-3.4-alpine
+#     restart: unless-stopped
+#     environment:
+#       - POSTGRES_USER=codiha
+#       - POSTGRES_PASSWORD=codiha
+#       - POSTGRES_DB=codiha
+#     ports:
+#       - "5432:5432"
+#     volumes:
+#       - db_data:/var/lib/postgresql/data
+#
+# volumes:
+#   db_data:
+# ---------------------------------------------------------------------
