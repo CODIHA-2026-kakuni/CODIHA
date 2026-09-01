@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="千葉市内の小型家電回収ボックスを現在地から近い順に探せる試作品です。"
+    />
+    <title>CODIHA｜近くの小型家電回収ボックス</title>
+    <link rel="stylesheet" href="/vendor/leaflet/leaflet.css" />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#results">回収場所一覧へ移動</a>
+
+    <header class="site-header">
+      <div class="header-inner">
+        <a class="brand" href="/" aria-label="CODIHA トップ">
+          <span class="brand-mark" aria-hidden="true">♻</span>
+          <span>
+            <strong>CODIHA</strong>
+            <small>小型家電リサイクル案内</small>
+          </span>
+        </a>
+        <span class="city-label">千葉市</span>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero" aria-labelledby="page-title">
+        <div class="hero-inner">
+          <p class="eyebrow">捨てる前に、資源として次へ。</p>
+          <h1 id="page-title">近くの回収ボックスを探す</h1>
+          <p class="hero-copy">
+            現在地から、千葉市内の小型家電回収場所を近い順に案内します。
+          </p>
+          <button id="locate-button" class="primary-button" type="button">
+            <span aria-hidden="true">◎</span>
+            現在地から探す
+          </button>
+          <p class="privacy-note">現在地は距離の計算だけに使い、保存しません。</p>
+        </div>
+      </section>
+
+      <section class="notice" aria-label="回収対象の注意">
+        <div class="notice-icon" aria-hidden="true">!</div>
+        <div>
+          <strong>家庭で使った小型家電が対象です</strong>
+          <p>
+            投入口（縦15cm×横30cm）に無理なく入る大きさが目安です。施設の休館日や年末年始は利用できない場合があります。
+          </p>
+        </div>
+      </section>
+
+      <section class="map-section" aria-labelledby="map-heading">
+        <div class="section-heading">
+          <div>
+            <p class="section-kicker">MAP</p>
+            <h2 id="map-heading">地図で確認</h2>
+          </div>
+          <p id="map-caption">千葉市内の回収場所を表示しています。</p>
+        </div>
+        <div class="map-frame">
+          <div id="map" aria-label="小型家電回収場所の地図"></div>
+          <div id="map-fallback" class="map-fallback" hidden>
+            地図を読み込めませんでした。下の一覧はそのまま利用できます。
+          </div>
+        </div>
+      </section>
+
+      <section id="results" class="results-section" aria-labelledby="results-heading">
+        <div class="section-heading results-heading-row">
+          <div>
+            <p class="section-kicker">LOCATIONS</p>
+            <h2 id="results-heading">回収場所一覧</h2>
+          </div>
+          <span id="result-count" class="result-count">読み込み中</span>
+        </div>
+
+        <div id="status-message" class="status-message" role="status" aria-live="polite">
+          回収場所を読み込んでいます。
+        </div>
+
+        <div id="error-panel" class="error-panel" role="alert" hidden>
+          <strong>データを読み込めませんでした</strong>
+          <p id="error-message"></p>
+          <button id="retry-button" class="secondary-button" type="button">もう一度読み込む</button>
+        </div>
+
+        <div id="site-list" class="site-list" aria-busy="true"></div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="footer-inner">
+        <div>
+          <strong>データについて</strong>
+          <p>回収場所・利用時間：2026年8月7日確認</p>
+          <p>公共施設位置情報：2025年6月27日時点</p>
+        </div>
+        <nav aria-label="データ出典">
+          <a
+            href="https://www.city.chiba.jp/kankyo/junkan/haikibutsu/kogatakadenn.html"
+            target="_blank"
+            rel="noopener noreferrer"
+            >千葉市 小型家電回収案内</a
+          >
+          <a
+            href="https://www.city.chiba.jp/sogoseisaku/shichokoshitsu/kohokocho/map_opendata.html"
+            target="_blank"
+            rel="noopener noreferrer"
+            >千葉市 公共施設位置情報</a
+          >
+        </nav>
+        <p class="prototype-note">本サービスはハッカソン用の試作品です。</p>
+      </div>
+    </footer>
+
+    <script src="/vendor/leaflet/leaflet.js"></script>
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>
