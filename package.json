@@ -1,0 +1,13 @@
+{
+  "name": "codiha",
+  "version": "1.0.0",
+  "description": "千葉市小型家電リサイクル回収ボックス位置表示アプリ",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "node --watch app.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}

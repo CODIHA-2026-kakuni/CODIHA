@@ -1,0 +1,16 @@
+body {
+  margin: 0;
+  font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
+  background-color: #f7f7f5;
+  color: #1f2e24;
+}
+
+header {
+  padding: 1rem;
+  background-color: #2f6b4f;
+  color: #ffffff;
+}
+
+main {
+  padding: 1rem;
+}
