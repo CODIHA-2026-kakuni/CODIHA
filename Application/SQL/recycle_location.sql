@@ -5,5 +5,8 @@ CREATE TABLE IF NOT EXISTS recycle_location(
     latitude DECIMAL(10, 7) NOT NULL COMMENT '緯度',
     longitude DECIMAL(10, 7) NOT NULL COMMENT '経度',
     business_hours TEXT COMMENT '営業時間',
+    battery BOOLEAN NOT NULL DEFAULT FALSE COMMENT '充電池を回収可能か指定',
+    phone BOOLEAN NOT NULL DEFAULT FALSE COMMENT '携帯電話・タブレットパソコンを回収可能か指定',
+    other_electronics BOOLEAN NOT NULL DEFAULT FALSE COMMENT 'その他の電子機器を回収可能か指定',
     PRIMARY KEY (id)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
