@@ -199,6 +199,33 @@ input:focus-visible {
   border-bottom: 0;
 }
 
+.item-row-interactive {
+  min-height: 0;
+  padding: 0;
+}
+
+.item-row-link {
+  display: flex;
+  width: 100%;
+  min-height: 66px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.item-row-link:hover {
+  background: var(--green-pale);
+}
+
+.item-row-link:focus-visible {
+  z-index: 1;
+  outline: 3px solid #f0ad25;
+  outline-offset: -3px;
+}
+
 .item-name {
   min-width: 0;
   flex: 1;

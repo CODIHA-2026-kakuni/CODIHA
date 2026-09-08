@@ -8,21 +8,35 @@
 
 const path = require('path');
 const express = require('express');
+const pool = require('./db/pool');
+const { filterAndSortItems } = require('./lib/item-search');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 // UI確認用に受け付ける画面状態。
-// API実装後は、通信結果に応じてブラウザ側で切り替える予定。
+// 通常アクセスでは使わず、?state=...を指定した場合だけ表示確認に使う。
 const SEARCH_PAGE_STATES = new Set(['loading', 'empty', 'error']);
 const RESULT_PAGE_STATES = new Set(['loading', 'empty', 'error', 'no-location']);
 
-function getPageState(queryState, allowedStates) {
+function getPreviewState(queryState, allowedStates) {
   if (typeof queryState === 'string' && allowedStates.has(queryState)) {
     return queryState;
   }
 
-  return 'loading';
+  return null;
+}
+
+function getPageState(queryState, allowedStates) {
+  return getPreviewState(queryState, allowedStates) || 'loading';
+}
+
+function getSearchQuery(queryValue) {
+  if (typeof queryValue !== 'string') {
+    return '';
+  }
+
+  return queryValue.trim().slice(0, 100);
 }
 
 // ---- テンプレートエンジン設定 ----
@@ -44,13 +58,61 @@ app.use('/css', express.static(path.join(__dirname, 'CSS')));
 // 例: Application/public/about.html → http://localhost:3000/about.html
 app.use(express.static(path.join(__dirname, 'public')));
 
-// ---- ルーティング（UI動作確認用） ----
-// 例: /?state=empty のように指定すると、各画面状態を確認できる。
-app.get('/', (req, res) => {
-  res.render('index', {
-    title: '小型家電回収ナビ | 品目検索',
-    state: getPageState(req.query.state, SEARCH_PAGE_STATES),
-  });
+// ---- 品目検索画面 ----
+// 通常はMySQLの品目を表示し、?state=...を指定した場合だけUI確認表示にする。
+app.get('/', async (req, res) => {
+  const query = getSearchQuery(req.query.q);
+  const previewState = getPreviewState(req.query.state, SEARCH_PAGE_STATES);
+  const retryUrl = query === '' ? '/' : `/?q=${encodeURIComponent(query)}`;
+
+  if (previewState !== null) {
+    return res.render('index', {
+      title: '小型家電回収ナビ | 品目検索',
+      state: previewState,
+      previewState,
+      query,
+      items: [],
+      retryUrl,
+    });
+  }
+
+  try {
+    const [databaseItems] = await pool.query(`
+      SELECT id, name, reading, category
+      FROM item
+    `);
+    const items = filterAndSortItems(databaseItems, query);
+
+    let state = 'success';
+    if (databaseItems.length === 0) {
+      state = 'no-data';
+    } else if (items.length === 0) {
+      state = 'empty';
+    }
+
+    return res.render('index', {
+      title: '小型家電回収ナビ | 品目検索',
+      state,
+      previewState: null,
+      query,
+      items,
+      retryUrl,
+    });
+  } catch (error) {
+    console.error(
+      '品目データの取得に失敗しました:',
+      error.code || 'UNKNOWN_ERROR',
+    );
+
+    return res.status(500).render('index', {
+      title: '小型家電回収ナビ | 品目検索',
+      state: 'error',
+      previewState: null,
+      query,
+      items: [],
+      retryUrl,
+    });
+  }
 });
 
 // 将来は /result?itemId={id} で、選択した品目情報を表示する。
