@@ -24,7 +24,7 @@
         <article aria-label="選択した品目の回収場所">
           <header class="item-heading" aria-label="選択した品目">
             <h1 class="skeleton skeleton-item-title">
-              <span class="visually-hidden">品目情報を読み込み中です。</span>
+              <span class="visually-hidden"><%= state === 'loading' ? '品目情報を読み込み中です。' : '選択した品目' %></span>
             </h1>
             <span class="skeleton-badge-list skeleton-heading-badges" aria-hidden="true">
               <span class="skeleton skeleton-badge skeleton-badge-wide"></span>
