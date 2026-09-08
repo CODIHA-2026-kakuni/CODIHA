@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#287d36">
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/css/sample.css">
+</head>
+<body>
+  <main class="app-shell result-page">
+    <div class="page-content">
+      <nav aria-label="品目検索へ戻る">
+        <a class="back-link" href="/">← 品目検索へ戻る</a>
+      </nav>
+
+      <% if (state === 'error') { %>
+        <section class="state-panel state-panel-error result-error" role="alert">
+          <h1 class="state-panel-title result-error-title">情報を読み込めませんでした。</h1>
+          <p>時間をおいて、もう一度お試しください。</p>
+          <a class="button" href="/result">再試行</a>
+        </section>
+      <% } else { %>
+        <article aria-label="選択した品目の回収場所">
+          <header class="item-heading" aria-label="選択した品目">
+            <h1 class="skeleton skeleton-item-title">
+              <span class="visually-hidden"><%= state === 'loading' ? '品目情報を読み込み中です。' : '選択した品目' %></span>
+            </h1>
+            <span class="skeleton-badge-list skeleton-heading-badges" aria-hidden="true">
+              <span class="skeleton skeleton-badge skeleton-badge-wide"></span>
+              <span class="skeleton skeleton-badge skeleton-badge-short"></span>
+            </span>
+          </header>
+
+          <section class="notice-panel" aria-labelledby="caution-heading">
+            <h2 id="caution-heading">注意事項</h2>
+            <span class="skeleton skeleton-notice-line"></span>
+            <span class="skeleton skeleton-notice-line skeleton-notice-line-short"></span>
+          </section>
+
+          <% if (state === 'no-location') { %>
+            <aside class="information-panel" role="status">
+              位置情報を取得できなかったため、回収場所を区ごとに表示します。
+            </aside>
+          <% } %>
+
+          <section class="map-section" aria-labelledby="map-heading">
+            <h2 id="map-heading">地図</h2>
+            <div class="map-placeholder" role="img" aria-label="地図の読み込み中">
+              <span>地図を読み込み中です。</span>
+            </div>
+          </section>
+
+          <section class="sites-section" aria-labelledby="sites-heading">
+            <h2 id="sites-heading">
+              <%= state === 'no-location' ? '回収場所（区ごと）' : '回収場所（近い順）' %>
+            </h2>
+
+            <% if (state === 'loading') { %>
+              <p class="loading-label" role="status">回収場所を読み込み中です。</p>
+              <ol class="site-list site-list-skeleton" aria-hidden="true">
+                <% /* 回収場所カードの配置確認用に、骨組みを3件表示する */ %>
+                <% for (let index = 0; index < 3; index += 1) { %>
+                  <li class="site-card">
+                    <div class="site-card-meta">
+                      <span class="skeleton skeleton-rank"></span>
+                      <span class="skeleton skeleton-ward"></span>
+                      <span class="skeleton skeleton-distance"></span>
+                    </div>
+                    <span class="skeleton skeleton-site-name"></span>
+                    <span class="skeleton skeleton-address"></span>
+                    <span class="skeleton skeleton-hours"></span>
+                    <div class="site-actions">
+                      <button class="button" type="button" disabled>地図で見る</button>
+                      <button class="button" type="button" disabled>Googleマップで経路</button>
+                    </div>
+                  </li>
+                <% } %>
+              </ol>
+            <% } %>
+
+            <% if (state === 'empty') { %>
+              <div class="state-panel state-panel-empty" role="status">
+                <p>この品目を回収できる場所が見つかりませんでした。</p>
+              </div>
+            <% } %>
+
+            <% if (state === 'no-location') { %>
+              <div class="ward-list" aria-hidden="true">
+                <% /* 区ごとのまとまりを確認するため、骨組みを2区分表示する */ %>
+                <% for (let wardIndex = 0; wardIndex < 2; wardIndex += 1) { %>
+                  <section class="ward-group">
+                    <span class="skeleton skeleton-ward-heading"></span>
+                    <div class="site-card">
+                      <div class="site-card-meta">
+                        <span class="skeleton skeleton-rank"></span>
+                      </div>
+                      <span class="skeleton skeleton-site-name"></span>
+                      <span class="skeleton skeleton-address"></span>
+                      <span class="skeleton skeleton-hours"></span>
+                      <div class="site-actions">
+                        <button class="button" type="button" disabled>地図で見る</button>
+                        <button class="button" type="button" disabled>Googleマップで経路</button>
+                      </div>
+                    </div>
+                  </section>
+                <% } %>
+              </div>
+            <% } %>
+          </section>
+        </article>
+      <% } %>
+    </div>
+
+    <footer class="page-footer">
+      <p>
+        出典：<a
+          href="https://www.city.chiba.jp/kankyo/junkan/haikibutsu/kogatakadenn.html"
+          target="_blank"
+          rel="noopener noreferrer"
+        >千葉市 小型家電・充電式電池の回収案内</a>
+      </p>
+    </footer>
+  </main>
+</body>
+</html>
