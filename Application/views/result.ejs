@@ -14,29 +14,56 @@
         <a class="back-link" href="/">← 品目検索へ戻る</a>
       </nav>
 
-      <% if (state === 'error') { %>
+      <% if (pageState === 'not-found') { %>
+        <section class="state-panel state-panel-error result-error" role="alert">
+          <h1 class="state-panel-title result-error-title">品目が見つかりません。</h1>
+          <p>品目検索から、もう一度品目を選んでください。</p>
+          <a class="button" href="/">品目検索へ戻る</a>
+        </section>
+      <% } else if (pageState === 'error') { %>
         <section class="state-panel state-panel-error result-error" role="alert">
           <h1 class="state-panel-title result-error-title">情報を読み込めませんでした。</h1>
           <p>時間をおいて、もう一度お試しください。</p>
-          <a class="button" href="/result">再試行</a>
+          <div class="result-state-actions">
+            <a class="button" href="<%= retryUrl %>">再試行</a>
+            <a class="button" href="/">品目検索へ戻る</a>
+          </div>
         </section>
       <% } else { %>
         <article aria-label="選択した品目の回収場所">
           <header class="item-heading" aria-label="選択した品目">
-            <h1 class="skeleton skeleton-item-title">
-              <span class="visually-hidden"><%= state === 'loading' ? '品目情報を読み込み中です。' : '選択した品目' %></span>
-            </h1>
-            <span class="skeleton-badge-list skeleton-heading-badges" aria-hidden="true">
-              <span class="skeleton skeleton-badge skeleton-badge-wide"></span>
-              <span class="skeleton skeleton-badge skeleton-badge-short"></span>
-            </span>
+            <% if (item !== null) { %>
+              <h1 class="result-item-title"><%= item.name %></h1>
+              <% if (badges.length > 0) { %>
+                <div class="badge-list result-badge-list" aria-label="品目の分類">
+                  <% badges.forEach((badge) => { %>
+                    <span class="badge"><%= badge %></span>
+                  <% }); %>
+                </div>
+              <% } %>
+            <% } else { %>
+              <h1 class="skeleton skeleton-item-title">
+                <span class="visually-hidden"><%= state === 'loading' ? '品目情報を読み込み中です。' : '選択した品目' %></span>
+              </h1>
+              <span class="skeleton-badge-list skeleton-heading-badges" aria-hidden="true">
+                <span class="skeleton skeleton-badge skeleton-badge-wide"></span>
+                <span class="skeleton skeleton-badge skeleton-badge-short"></span>
+              </span>
+            <% } %>
           </header>
 
-          <section class="notice-panel" aria-labelledby="caution-heading">
-            <h2 id="caution-heading">注意事項</h2>
-            <span class="skeleton skeleton-notice-line"></span>
-            <span class="skeleton skeleton-notice-line skeleton-notice-line-short"></span>
-          </section>
+          <% if (item !== null && item.caution !== null) { %>
+            <section class="notice-panel" aria-labelledby="caution-heading">
+              <h2 id="caution-heading">注意事項</h2>
+              <p class="caution-text"><%= item.caution %></p>
+            </section>
+          <% } else if (item === null) { %>
+            <section class="notice-panel" aria-labelledby="caution-heading">
+              <h2 id="caution-heading">注意事項</h2>
+              <span class="skeleton skeleton-notice-line"></span>
+              <span class="skeleton skeleton-notice-line skeleton-notice-line-short"></span>
+            </section>
+          <% } %>
 
           <% if (state === 'no-location') { %>
             <aside class="information-panel" role="status">
@@ -46,15 +73,33 @@
 
           <section class="map-section" aria-labelledby="map-heading">
             <h2 id="map-heading">地図</h2>
-            <div class="map-placeholder" role="img" aria-label="地図の読み込み中">
-              <span>地図を読み込み中です。</span>
-            </div>
+            <% if (state === 'pending-location') { %>
+              <div class="map-placeholder" role="img" aria-label="地図の表示は準備中">
+                <span>地図の表示は準備中です。</span>
+              </div>
+            <% } else { %>
+              <div class="map-placeholder" role="img" aria-label="地図の読み込み中">
+                <span>地図を読み込み中です。</span>
+              </div>
+            <% } %>
           </section>
 
           <section class="sites-section" aria-labelledby="sites-heading">
             <h2 id="sites-heading">
-              <%= state === 'no-location' ? '回収場所（区ごと）' : '回収場所（近い順）' %>
+              <% if (state === 'no-location') { %>
+                回収場所（区ごと）
+              <% } else if (state === 'pending-location') { %>
+                回収場所
+              <% } else { %>
+                回収場所（近い順）
+              <% } %>
             </h2>
+
+            <% if (state === 'pending-location') { %>
+              <div class="state-panel state-panel-empty" role="status">
+                <p>回収場所の表示は準備中です。</p>
+              </div>
+            <% } %>
 
             <% if (state === 'loading') { %>
               <p class="loading-label" role="status">回収場所を読み込み中です。</p>

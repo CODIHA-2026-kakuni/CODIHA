@@ -199,6 +199,33 @@ input:focus-visible {
   border-bottom: 0;
 }
 
+.item-row-interactive {
+  min-height: 0;
+  padding: 0;
+}
+
+.item-row-link {
+  display: flex;
+  width: 100%;
+  min-height: 66px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.item-row-link:hover {
+  background: var(--green-pale);
+}
+
+.item-row-link:focus-visible {
+  z-index: 1;
+  outline: 3px solid #f0ad25;
+  outline-offset: -3px;
+}
+
 .item-name {
   min-width: 0;
   flex: 1;
@@ -306,6 +333,18 @@ input:focus-visible {
   margin-bottom: 16px;
 }
 
+.result-item-title {
+  margin: 0 0 10px;
+  font-size: 1.65rem;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.result-badge-list {
+  max-width: 100%;
+  justify-content: flex-start;
+}
+
 .skeleton-item-title {
   width: min(76%, 300px);
   height: 31px;
@@ -329,6 +368,23 @@ input:focus-visible {
 .notice-panel h2 {
   margin: 0 0 8px;
   font-size: 1rem;
+}
+
+.caution-text {
+  margin: 0;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+.result-state-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
+.result-state-actions .button {
+  margin-top: 6px;
 }
 
 .skeleton-notice-line {
