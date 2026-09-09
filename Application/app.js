@@ -179,7 +179,9 @@ async function renderResultPage(req, res, databasePool = pool) {
       ...items[0],
       caution: normalizeCaution(items[0].caution),
     };
-    const state = previewState || 'loading';
+    // 通常表示では後続機能を「読み込み中」のままにせず、未実装だと分かる状態にする。
+    // ?state=loading を明示した場合は、引き続き画面確認用の骨組みを表示する。
+    const state = previewState || 'pending-location';
 
     return res.render('result', {
       title: `${item.name} | 小型家電回収ナビ`,

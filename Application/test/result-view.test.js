@@ -67,6 +67,14 @@ test('画面確認用loadingでは従来の骨組みを表示する', async () =
   assert.match(html, /回収場所を読み込み中です。/);
 });
 
+test('通常の品目結果では未実装の地図と回収場所を準備中と案内する', async () => {
+  const html = await renderResult({ state: 'pending-location' });
+
+  assert.match(html, /地図の表示は準備中です。/);
+  assert.match(html, /回収場所の表示は準備中です。/);
+  assert.doesNotMatch(html, /読み込み中です。/);
+});
+
 test('loading以外の画面確認用状態を読み込み中とは案内しない', async () => {
   const html = await renderResult({
     title: '小型家電回収ナビ | 回収場所',

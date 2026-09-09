@@ -51,6 +51,7 @@ test('正しいitemIdではプレースホルダーを使って品目を取得�
   assert.equal(response.data.item.name, 'モバイルバッテリー');
   assert.equal(response.data.item.caution, '発火に注意してください。');
   assert.deepEqual(response.data.badges, ['小型家電', '充電式電池']);
+  assert.equal(response.data.state, 'pending-location');
 });
 
 test('不正なitemIdではMySQLへ問い合わせず400を返す', async () => {

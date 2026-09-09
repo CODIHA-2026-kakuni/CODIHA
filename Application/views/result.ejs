@@ -73,15 +73,33 @@
 
           <section class="map-section" aria-labelledby="map-heading">
             <h2 id="map-heading">地図</h2>
-            <div class="map-placeholder" role="img" aria-label="地図の読み込み中">
-              <span>地図を読み込み中です。</span>
-            </div>
+            <% if (state === 'pending-location') { %>
+              <div class="map-placeholder" role="img" aria-label="地図の表示は準備中">
+                <span>地図の表示は準備中です。</span>
+              </div>
+            <% } else { %>
+              <div class="map-placeholder" role="img" aria-label="地図の読み込み中">
+                <span>地図を読み込み中です。</span>
+              </div>
+            <% } %>
           </section>
 
           <section class="sites-section" aria-labelledby="sites-heading">
             <h2 id="sites-heading">
-              <%= state === 'no-location' ? '回収場所（区ごと）' : '回収場所（近い順）' %>
+              <% if (state === 'no-location') { %>
+                回収場所（区ごと）
+              <% } else if (state === 'pending-location') { %>
+                回収場所
+              <% } else { %>
+                回収場所（近い順）
+              <% } %>
             </h2>
+
+            <% if (state === 'pending-location') { %>
+              <div class="state-panel state-panel-empty" role="status">
+                <p>回収場所の表示は準備中です。</p>
+              </div>
+            <% } %>
 
             <% if (state === 'loading') { %>
               <p class="loading-label" role="status">回収場所を読み込み中です。</p>
