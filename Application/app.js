@@ -89,6 +89,9 @@ app.get('/', async (req, res) => {
     const [databaseItems] = await pool.query(`
       SELECT id, name, reading, category
       FROM item
+      WHERE battery = TRUE
+         OR phone = TRUE
+         OR other_electronics = TRUE
     `);
     const items = filterAndSortItems(databaseItems, query);
 
@@ -173,6 +176,18 @@ async function renderResultPage(req, res, databasePool = pool) {
     );
 
     if (items.length === 0) {
+      return res.status(404).render('result', {
+        title: '品目が見つかりません | 小型家電回収ナビ',
+        pageState: 'not-found',
+        state: 'loading',
+        item: null,
+        badges: [],
+        retryUrl: `/result?itemId=${itemId}`,
+      });
+    }
+
+    // このサービスの対象外である小型家電以外の品目は表示しない。
+    if (getRecoveryTypes(items[0]).length === 0) {
       return res.status(404).render('result', {
         title: '品目が見つかりません | 小型家電回収ナビ',
         pageState: 'not-found',

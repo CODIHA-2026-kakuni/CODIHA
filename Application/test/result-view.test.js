@@ -67,12 +67,12 @@ test('画面確認用loadingでは従来の骨組みを表示する', async () =
   assert.match(html, /回収場所を読み込み中です。/);
 });
 
-test('通常の品目結果では未実装の地図と回収場所を準備中と案内する', async () => {
+test('通常の品目結果では現在地と回収場所の確認表示とスクリプトを用意する', async () => {
   const html = await renderResult({ state: 'pending-location' });
 
-  assert.match(html, /地図の表示は準備中です。/);
-  assert.match(html, /回収場所の表示は準備中です。/);
-  assert.doesNotMatch(html, /読み込み中です。/);
+  assert.match(html, /現在地と回収場所を確認しています。/);
+  assert.match(html, /src="\/js\/result\.js"/);
+  assert.match(html, /leaflet@1\.9\.4/);
 });
 
 test('loading以外の画面確認用状態を読み込み中とは案内しない', async () => {

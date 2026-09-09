@@ -6,6 +6,19 @@
   <meta name="theme-color" content="#287d36">
   <title><%= title %></title>
   <link rel="stylesheet" href="/css/sample.css">
+  <% if (item !== null && state === 'pending-location') { %>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    >
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+    ></script>
+  <% } %>
 </head>
 <body>
   <main class="app-shell result-page">
@@ -30,7 +43,11 @@
           </div>
         </section>
       <% } else { %>
-        <article aria-label="選択した品目の回収場所">
+        <article
+          aria-label="選択した品目の回収場所"
+          data-live-result="<%= item !== null && state === 'pending-location' ? 'true' : 'false' %>"
+          data-item-id="<%= item !== null ? item.id : '' %>"
+        >
           <header class="item-heading" aria-label="選択した品目">
             <% if (item !== null) { %>
               <h1 class="result-item-title"><%= item.name %></h1>
@@ -71,11 +88,20 @@
             </aside>
           <% } %>
 
+          <% if (state === 'pending-location') { %>
+            <aside id="location-information" class="information-panel" role="status" hidden></aside>
+          <% } %>
+
           <section class="map-section" aria-labelledby="map-heading">
             <h2 id="map-heading">地図</h2>
             <% if (state === 'pending-location') { %>
-              <div class="map-placeholder" role="img" aria-label="地図の表示は準備中">
-                <span>地図の表示は準備中です。</span>
+              <div
+                id="map-container"
+                class="map-placeholder"
+                role="status"
+                aria-label="現在地と回収場所を確認中"
+              >
+                <span>現在地と回収場所を確認しています。</span>
               </div>
             <% } else { %>
               <div class="map-placeholder" role="img" aria-label="地図の読み込み中">
@@ -96,9 +122,33 @@
             </h2>
 
             <% if (state === 'pending-location') { %>
-              <div class="state-panel state-panel-empty" role="status">
-                <p>回収場所の表示は準備中です。</p>
+              <div id="sites-loading" aria-busy="true">
+                <ol class="site-list site-list-skeleton" aria-hidden="true">
+                  <% /* 現在地とAPIの確認中に、施設カードの骨組みを3件表示する */ %>
+                  <% for (let index = 0; index < 3; index += 1) { %>
+                    <li class="site-card">
+                      <div class="site-card-meta">
+                        <span class="skeleton skeleton-rank"></span>
+                        <span class="skeleton skeleton-distance"></span>
+                      </div>
+                      <span class="skeleton skeleton-site-name"></span>
+                      <span class="skeleton skeleton-address"></span>
+                      <span class="skeleton skeleton-hours"></span>
+                      <div class="site-actions">
+                        <button class="button" type="button" disabled>地図で見る</button>
+                        <button class="button" type="button" disabled>Googleマップで経路</button>
+                      </div>
+                    </li>
+                  <% } %>
+                </ol>
               </div>
+
+              <div id="sites-feedback" class="state-panel" role="status" hidden>
+                <p id="sites-feedback-message"></p>
+                <button id="sites-retry" class="button" type="button" hidden>再試行</button>
+              </div>
+
+              <div id="sites-results" hidden></div>
             <% } %>
 
             <% if (state === 'loading') { %>
@@ -126,7 +176,7 @@
 
             <% if (state === 'empty') { %>
               <div class="state-panel state-panel-empty" role="status">
-                <p>この品目を回収できる場所が見つかりませんでした。</p>
+                <p>対応する回収場所が見つかりませんでした。</p>
               </div>
             <% } %>
 
@@ -137,9 +187,6 @@
                   <section class="ward-group">
                     <span class="skeleton skeleton-ward-heading"></span>
                     <div class="site-card">
-                      <div class="site-card-meta">
-                        <span class="skeleton skeleton-rank"></span>
-                      </div>
                       <span class="skeleton skeleton-site-name"></span>
                       <span class="skeleton skeleton-address"></span>
                       <span class="skeleton skeleton-hours"></span>
@@ -167,5 +214,9 @@
       </p>
     </footer>
   </main>
+
+  <% if (item !== null && state === 'pending-location') { %>
+    <script type="module" src="/js/result.js"></script>
+  <% } %>
 </body>
 </html>
