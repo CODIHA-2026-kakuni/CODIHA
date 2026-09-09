@@ -333,6 +333,18 @@ input:focus-visible {
   margin-bottom: 16px;
 }
 
+.result-item-title {
+  margin: 0 0 10px;
+  font-size: 1.65rem;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.result-badge-list {
+  max-width: 100%;
+  justify-content: flex-start;
+}
+
 .skeleton-item-title {
   width: min(76%, 300px);
   height: 31px;
@@ -356,6 +368,23 @@ input:focus-visible {
 .notice-panel h2 {
   margin: 0 0 8px;
   font-size: 1rem;
+}
+
+.caution-text {
+  margin: 0;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+.result-state-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
+.result-state-actions .button {
+  margin-top: 6px;
 }
 
 .skeleton-notice-line {
