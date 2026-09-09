@@ -1,12 +1,117 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#287d36">
   <title><%= title %></title>
-  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/sample.css">
 </head>
 <body>
-  <h1><%= title %></h1>
-  <p>CODIHA サーバーが起動しています。</p>
+  <main class="app-shell search-page">
+    <div class="page-content">
+      <header class="site-header">
+        <h1>小型家電回収ナビ</h1>
+      </header>
+
+      <p id="search-description" class="page-introduction">
+        捨てたい小型家電の品目名を検索してください。
+      </p>
+
+      <section aria-labelledby="search-heading">
+        <h2 id="search-heading" class="visually-hidden">小型家電の品目を検索</h2>
+        <form class="search-form" action="/" method="get" role="search">
+          <% if (previewState !== null) { %>
+            <input type="hidden" name="state" value="<%= previewState %>">
+          <% } %>
+          <label class="visually-hidden" for="search-input">品目名</label>
+          <input
+            id="search-input"
+            name="q"
+            type="search"
+            value="<%= query %>"
+            placeholder="品目名で検索"
+            maxlength="100"
+            autocomplete="off"
+            enterkeyhint="search"
+            aria-describedby="search-description"
+            <%= state === 'loading' ? 'disabled' : '' %>
+          >
+          <button
+            class="button button-primary"
+            type="submit"
+            <%= state === 'loading' ? 'disabled' : '' %>
+          >検索</button>
+        </form>
+      </section>
+
+      <section class="items-section" aria-labelledby="items-heading">
+        <h2 id="items-heading" class="visually-hidden">小型家電の品目一覧</h2>
+
+        <% if (state === 'success') { %>
+          <ul class="item-list">
+            <% items.forEach((item) => { %>
+              <li class="item-row item-row-interactive">
+                <a class="item-row-link" href="/result?itemId=<%= item.id %>">
+                  <span class="item-name"><%= item.name %></span>
+                  <span class="badge-list">
+                    <span class="badge"><%= item.category %></span>
+                  </span>
+                </a>
+              </li>
+            <% }); %>
+          </ul>
+        <% } %>
+
+        <% if (state === 'loading') { %>
+          <p class="loading-label" role="status">品目を読み込み中です。</p>
+          <ul class="item-list item-list-skeleton" aria-hidden="true">
+            <% /* 品目一覧の配置確認用に、骨組みを6件表示する */ %>
+            <% for (let index = 0; index < 6; index += 1) { %>
+              <li class="item-row skeleton-item-row">
+                <span class="skeleton skeleton-item-name"></span>
+                <span class="skeleton-badge-list">
+                  <span class="skeleton skeleton-badge"></span>
+                  <% if (index === 1 || index === 4) { %>
+                    <span class="skeleton skeleton-badge skeleton-badge-short"></span>
+                  <% } %>
+                </span>
+              </li>
+            <% } %>
+          </ul>
+        <% } %>
+
+        <% if (state === 'empty') { %>
+          <div class="state-panel state-panel-empty" role="status">
+            <p>該当する品目はありません。</p>
+          </div>
+        <% } %>
+
+        <% if (state === 'no-data') { %>
+          <div class="state-panel state-panel-empty" role="status">
+            <p>品目データが登録されていません。</p>
+          </div>
+        <% } %>
+
+        <% if (state === 'error') { %>
+          <div class="state-panel state-panel-error" role="alert">
+            <p class="state-panel-title">品目を読み込めませんでした。</p>
+            <p>時間をおいて、もう一度お試しください。</p>
+            <a class="button" href="<%= retryUrl %>">再試行</a>
+          </div>
+        <% } %>
+      </section>
+    </div>
+
+    <footer class="page-footer">
+      <p>
+        出典：<a
+          href="https://www.city.chiba.jp/kankyo/junkan/haikibutsu/kogatakadenn.html"
+          target="_blank"
+          rel="noopener noreferrer"
+        >千葉市 小型家電・充電式電池の回収案内</a>
+      </p>
+    </footer>
+  </main>
 </body>
 </html>
