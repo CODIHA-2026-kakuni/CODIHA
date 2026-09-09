@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node app.js",
     "dev": "nodemon app.js",
-    "test": "node --test"
+    "test": "node --test > test.log 2>&1; status=$?; cat test.log; exit $status"
   },
   "license": "UNLICENSED",
   "private": true,

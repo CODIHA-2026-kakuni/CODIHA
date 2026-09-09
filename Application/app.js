@@ -15,6 +15,14 @@ const {
   normalizeCaution,
   parseItemId,
 } = require('./lib/item-result');
+//lib/site-search.jsの関数を宣言
+const {
+  getRecoveryTypes,
+  parseCoordinates,
+  buildSiteList,
+} = require('./lib/site-search');
+
+const SITE_SEARCH_ERROR_MESSAGE = '回収場所を取得できませんでした。';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -210,6 +218,67 @@ async function renderResultPage(req, res, databasePool = pool) {
 
 app.get('/result', (req, res) => renderResultPage(req, res));
 
+// ---- 品目に対応する回収場所API ----
+// databasePoolを引数にすることで、テスト時はMySQLへ接続せず動作を確認できる。
+async function getItemSites(req, res, databasePool = pool) {
+  const itemId = parseItemId(req.params.id);//itemのid取得
+
+  if (itemId === null) {
+    return res.status(400).json({ message: SITE_SEARCH_ERROR_MESSAGE });
+  }
+
+  const coordinates = parseCoordinates(req.query);//位置情報取得
+
+  if (coordinates === null) {
+    return res.status(400).json({ message: SITE_SEARCH_ERROR_MESSAGE });
+  }
+
+  //try内でエラーが起きたらcatch内の処理を実行する
+  try {
+    const [items] = await databasePool.query(//DBのitemテーブルからデータの取得を２回まで
+      `
+        SELECT id, battery, phone, other_electronics
+        FROM item
+        WHERE id = ? 
+        LIMIT 1
+      `,
+      [itemId],
+    );//[itemId]はSQLの?に入る値を指定
+
+    if (items.length === 0) {
+      return res.status(404).json({ message: SITE_SEARCH_ERROR_MESSAGE });
+    }
+
+    const recoveryTypes = getRecoveryTypes(items[0]);
+
+    if (recoveryTypes.length === 0) {//回収種別が全てfalseの品目では空配列を返す
+      return res.status(200).json({ sites: [] });
+    }
+
+    const recoveryConditions = recoveryTypes
+      .map((columnName) => `${columnName} = TRUE`)//`battery=TRUE`といった配列の作成
+      .join(' OR ');//`battery=TRUE OR phone=TRUE`のように結合
+    
+    //recoveryConditionsからrecycle_locationのデータを取得する
+    const [rows] = await databasePool.query(`
+      SELECT id, name, reading, ward, address, latitude, longitude, business_hours
+      FROM recycle_location
+      WHERE ${recoveryConditions}
+    `);
+
+    return res.status(200).json({ sites: buildSiteList(rows, coordinates) });
+  } catch (error) {
+    console.error(
+      '回収場所の取得に失敗しました:',
+      error.code || 'UNKNOWN_ERROR',
+    );
+
+    return res.status(500).json({ message: SITE_SEARCH_ERROR_MESSAGE });
+  }
+}
+
+app.get('/api/items/:id/sites', (req, res) => getItemSites(req, res));
+
 // ---- サーバー起動 ----
 // テストからapp.jsを読み込んだだけでは、待受を開始しない。
 if (require.main === module) {
@@ -221,4 +290,5 @@ if (require.main === module) {
 module.exports = {
   app,
   renderResultPage,
+  getItemSites,
 };
