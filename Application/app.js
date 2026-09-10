@@ -36,7 +36,6 @@ const RESULT_PAGE_STATES = new Set([
   'empty',
   'error',
   'no-location',
-  'no-site',
 ]);
 
 function getPreviewState(queryState, allowedStates) {
@@ -75,15 +74,15 @@ app.use('/css', express.static(path.join(__dirname, 'CSS')));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // ---- 品目検索画面 ----
-// 通常はMySQLの品目を表示し、?state=...を指定した場合だけUI確認表示にする。
-app.get('/', async (req, res) => {
+// databasePoolを引数にすることで、テスト時はMySQLへ接続せず動作を確認できる。
+async function renderSearchPage(req, res, databasePool = pool) {
   const query = getSearchQuery(req.query.q);
   const previewState = getPreviewState(req.query.state, SEARCH_PAGE_STATES);
   const retryUrl = query === '' ? '/' : `/?q=${encodeURIComponent(query)}`;
 
   if (previewState !== null) {
     return res.render('index', {
-      title: '小型家電回収ナビ | 品目検索',
+      title: 'ごみ分別・持込ナビ | 品目検索',
       state: previewState,
       previewState,
       query,
@@ -93,12 +92,9 @@ app.get('/', async (req, res) => {
   }
 
   try {
-    const [databaseItems] = await pool.query(`
+    const [databaseItems] = await databasePool.query(`
       SELECT id, name, reading, category
       FROM item
-      WHERE battery = TRUE
-         OR phone = TRUE
-         OR other_electronics = TRUE
     `);
     const items = filterAndSortItems(databaseItems, query);
 
@@ -110,7 +106,7 @@ app.get('/', async (req, res) => {
     }
 
     return res.render('index', {
-      title: '小型家電回収ナビ | 品目検索',
+      title: 'ごみ分別・持込ナビ | 品目検索',
       state,
       previewState: null,
       query,
@@ -124,7 +120,7 @@ app.get('/', async (req, res) => {
     );
 
     return res.status(500).render('index', {
-      title: '小型家電回収ナビ | 品目検索',
+      title: 'ごみ分別・持込ナビ | 品目検索',
       state: 'error',
       previewState: null,
       query,
@@ -132,7 +128,9 @@ app.get('/', async (req, res) => {
       retryUrl,
     });
   }
-});
+}
+
+app.get('/', (req, res) => renderSearchPage(req, res));
 
 // ---- 選択した品目の結果画面 ----
 // databasePoolを引数にすることで、テスト時はMySQLへ接続せず動作を確認できる。
@@ -142,7 +140,7 @@ async function renderResultPage(req, res, databasePool = pool) {
   // itemIdがない画面確認用URLは、従来どおり骨組みを表示する。
   if (req.query.itemId === undefined && previewState !== null) {
     return res.render('result', {
-      title: '小型家電回収ナビ | 回収場所',
+      title: 'ごみ分別・持込ナビ | 回収場所',
       pageState: previewState === 'error' ? 'error' : 'preview',
       state: previewState,
       item: null,
@@ -155,7 +153,7 @@ async function renderResultPage(req, res, databasePool = pool) {
 
   if (itemId === null) {
     return res.status(400).render('result', {
-      title: '品目が見つかりません | 小型家電回収ナビ',
+      title: '品目が見つかりません | ごみ分別・持込ナビ',
       pageState: 'not-found',
       state: 'loading',
       item: null,
@@ -185,7 +183,7 @@ async function renderResultPage(req, res, databasePool = pool) {
 
     if (items.length === 0) {
       return res.status(404).render('result', {
-        title: '品目が見つかりません | 小型家電回収ナビ',
+        title: '品目が見つかりません | ごみ分別・持込ナビ',
         pageState: 'not-found',
         state: 'loading',
         item: null,
@@ -205,10 +203,10 @@ async function renderResultPage(req, res, databasePool = pool) {
     // 通常表示では後続機能を「読み込み中」のままにせず、未実装だと分かる状態にする。
     // ?state=loading を明示した場合は、引き続き画面確認用の骨組みを表示する。
     const state = previewState
-      || (hasRecoverySite ? 'pending-location' : 'no-site');
+      || (hasRecoverySite ? 'pending-location' : 'empty');
 
     return res.render('result', {
-      title: `${item.name} | 小型家電回収ナビ`,
+      title: `${item.name} | ごみ分別・持込ナビ`,
       pageState: state === 'error' ? 'error' : 'success',
       state,
       item,
@@ -222,7 +220,7 @@ async function renderResultPage(req, res, databasePool = pool) {
     );
 
     return res.status(500).render('result', {
-      title: '情報を読み込めませんでした | 小型家電回収ナビ',
+      title: '情報を読み込めませんでした | ごみ分別・持込ナビ',
       pageState: 'error',
       state: 'error',
       item: null,
@@ -305,6 +303,7 @@ if (require.main === module) {
 
 module.exports = {
   app,
+  renderSearchPage,
   renderResultPage,
   getItemSites,
 };

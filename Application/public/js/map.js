@@ -1,6 +1,7 @@
 const CHIBA_CITY_HALL = [35.6071392, 140.1064909];
 const EMPTY_MAP_ZOOM = 11;
 const FOCUS_ZOOM = 16;
+const MAP_READY_TIMEOUT_MS = 15000;
 const TILE_URL = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
 const TILE_ATTRIBUTION = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>';
 
@@ -61,6 +62,14 @@ export function createSiteMap({
   }
 
   let map;
+  let readyTimeoutId = null;
+
+  function clearReadyTimeout() {
+    if (readyTimeoutId !== null) {
+      window.clearTimeout(readyTimeoutId);
+      readyTimeoutId = null;
+    }
+  }
 
   try {
     container.replaceChildren();
@@ -77,6 +86,17 @@ export function createSiteMap({
     let initialTileSuccesses = 0;
     let initialTileFailures = 0;
     let initialLoadFinished = false;
+    let readyNotified = false;
+
+    // 読み込み完了とタイムアウトの両方から呼ばれても、一度だけ有効化する。
+    function notifyReady() {
+      if (readyNotified) {
+        return;
+      }
+
+      readyNotified = true;
+      onReady();
+    }
 
     const tileLayer = window.L.tileLayer(TILE_URL, {
       attribution: TILE_ATTRIBUTION,
@@ -107,6 +127,7 @@ export function createSiteMap({
       }
 
       initialLoadFinished = true;
+      clearReadyTimeout();
       if (
         initialTileRequests > 0
         && initialTileSuccesses === 0
@@ -117,8 +138,15 @@ export function createSiteMap({
         return;
       }
 
-      onReady();
+      notifyReady();
     });
+
+    // 通信が完了も失敗もしない場合でも、15秒後には地図操作を可能にする。
+    readyTimeoutId = window.setTimeout(() => {
+      if (!initialLoadFinished && map !== null) {
+        notifyReady();
+      }
+    }, MAP_READY_TIMEOUT_MS);
 
     tileLayer.addTo(map);
 
@@ -174,6 +202,7 @@ export function createSiteMap({
         return true;
       },
       destroy() {
+        clearReadyTimeout();
         if (map !== null) {
           map.remove();
           map = null;
@@ -181,6 +210,7 @@ export function createSiteMap({
       },
     };
   } catch (error) {
+    clearReadyTimeout();
     showMapFailure(container, map || null, onFailure);
     return null;
   }

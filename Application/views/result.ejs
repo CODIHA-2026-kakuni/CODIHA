@@ -44,7 +44,7 @@
         </section>
       <% } else { %>
         <article
-          aria-label="選択した品目の回収場所"
+          aria-label="選択した品目の情報"
           data-live-result="<%= item !== null && state === 'pending-location' ? 'true' : 'false' %>"
           data-item-id="<%= item !== null ? item.id : '' %>"
         >
@@ -69,23 +69,23 @@
             <% } %>
           </header>
 
-          <% if (state === 'no-site') { %>
+          <% if (item !== null && state === 'empty') { %>
             <aside class="information-panel" role="status">
               この品目は、小型家電回収ボックスでは回収できません。分別区分にしたがって捨ててください。
             </aside>
+          <% } %>
 
-            <% if (item === null) { %>
-              <section class="notice-panel" aria-labelledby="dispose-heading">
-                <h2 id="dispose-heading">捨て方</h2>
-                <span class="skeleton skeleton-notice-line"></span>
-                <span class="skeleton skeleton-notice-line skeleton-notice-line-short"></span>
-              </section>
-            <% } else if (item.dispose_method !== null) { %>
-              <section class="notice-panel" aria-labelledby="dispose-heading">
-                <h2 id="dispose-heading">捨て方</h2>
-                <p class="caution-text"><%= item.dispose_method %></p>
-              </section>
-            <% } %>
+          <% if (item !== null && item.dispose_method !== null) { %>
+            <section class="notice-panel" aria-labelledby="dispose-heading">
+              <h2 id="dispose-heading">出し方</h2>
+              <p class="guidance-text"><%= item.dispose_method %></p>
+            </section>
+          <% } else if (item === null) { %>
+            <section class="notice-panel" aria-labelledby="dispose-heading">
+              <h2 id="dispose-heading">出し方</h2>
+              <span class="skeleton skeleton-notice-line"></span>
+              <span class="skeleton skeleton-notice-line skeleton-notice-line-short"></span>
+            </section>
           <% } %>
 
           <% if (item !== null && item.caution !== null) { %>
@@ -111,8 +111,8 @@
             <aside id="location-information" class="information-panel" role="status" hidden></aside>
           <% } %>
 
-          <% /* 回収場所がない品目（可燃ごみなど）では、地図と一覧を表示しない */ %>
-          <% if (state !== 'no-site') { %>
+          <% /* 回収場所がない通常品目では、地図と一覧を表示しない */ %>
+          <% if (!(item !== null && state === 'empty')) { %>
             <section class="map-section" aria-labelledby="map-heading">
               <h2 id="map-heading">地図</h2>
               <% if (state === 'pending-location') { %>
@@ -229,6 +229,11 @@
     <footer class="page-footer">
       <p>
         出典：<a
+          href="https://www.city.chiba.jp/kurashi/gomi/gomi/gomiguide/index.html"
+          target="_blank"
+          rel="noopener noreferrer"
+        >千葉市 ごみ分別ガイド</a><br>
+        <a
           href="https://www.city.chiba.jp/kankyo/junkan/haikibutsu/kogatakadenn.html"
           target="_blank"
           rel="noopener noreferrer"

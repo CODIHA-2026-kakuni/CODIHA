@@ -11,15 +11,15 @@
   <main class="app-shell search-page">
     <div class="page-content">
       <header class="site-header">
-        <h1>小型家電回収ナビ</h1>
+        <h1>ごみ分別・持込ナビ</h1>
       </header>
 
       <p id="search-description" class="page-introduction">
-        捨てたい小型家電の品目名を検索してください。
+        捨てたいごみの品目名を検索してください。
       </p>
 
       <section aria-labelledby="search-heading">
-        <h2 id="search-heading" class="visually-hidden">小型家電の品目を検索</h2>
+        <h2 id="search-heading" class="visually-hidden">ごみの品目を検索</h2>
         <form class="search-form" action="/" method="get" role="search">
           <% if (previewState !== null) { %>
             <input type="hidden" name="state" value="<%= previewState %>">
@@ -46,7 +46,7 @@
       </section>
 
       <section class="items-section" aria-labelledby="items-heading">
-        <h2 id="items-heading" class="visually-hidden">小型家電の品目一覧</h2>
+        <h2 id="items-heading" class="visually-hidden">ごみの品目一覧</h2>
 
         <% if (state === 'success') { %>
           <ul class="item-list">
@@ -106,6 +106,11 @@
     <footer class="page-footer">
       <p>
         出典：<a
+          href="https://www.city.chiba.jp/kurashi/gomi/gomi/gomiguide/index.html"
+          target="_blank"
+          rel="noopener noreferrer"
+        >千葉市 ごみ分別ガイド</a><br>
+        <a
           href="https://www.city.chiba.jp/kankyo/junkan/haikibutsu/kogatakadenn.html"
           target="_blank"
           rel="noopener noreferrer"

@@ -370,6 +370,7 @@ input:focus-visible {
   font-size: 1rem;
 }
 
+.guidance-text,
 .caution-text {
   margin: 0;
   white-space: pre-line;
