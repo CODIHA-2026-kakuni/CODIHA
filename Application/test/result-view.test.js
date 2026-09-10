@@ -149,6 +149,25 @@ test('出し方が登録されていない品目では公式ガイドへの案�
   assert.match(html, />千葉市の案内を確認する<\/a>/);
 });
 
+test('URLを除去した結果、出し方が空になった品目ではURLを直接表示しない', async () => {
+  const html = await renderResult({
+    title: 'ポラロイドカメラ | ごみ分別・持込ナビ',
+    state: 'empty',
+    item: {
+      id: 1785,
+      name: 'ポラロイドカメラ',
+      dispose_method: null,
+      caution: null,
+      requires_dropoff: false,
+    },
+    badges: ['不燃ごみ'],
+  });
+
+  assert.match(html, /詳しい出し方は千葉市のごみ分別ガイドで確認してください。/);
+  assert.match(html, />千葉市の案内を確認する<\/a>/);
+  assert.doesNotMatch(html, /https:\/\/www\.example\.jp\/details/);
+});
+
 test('特別な持込が必要で回収場所がない品目では断定を避けた案内と公式リンクを表示する', async () => {
   const html = await renderResult({
     title: 'エアコン（クーラー） | ごみ分別・持込ナビ',

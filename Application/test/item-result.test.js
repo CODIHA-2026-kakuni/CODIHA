@@ -72,13 +72,20 @@ test('空の廃棄方法をnullにし、文章の前後だけを整える', () =
   );
 });
 
-test('古いDBに残ったURLは出し方として画面へ渡さない', () => {
+test('説明文とURLが混在する場合は説明文だけを残す', () => {
   assert.equal(
     normalizeDisposeMethod('購入店へ相談／https://www.example.jp/details'),
     '購入店へ相談',
   );
+});
+
+test('URLだけまたは重複したURLだけの場合はnullを返す', () => {
   assert.equal(
     normalizeDisposeMethod('https://www.example.jp/details'),
+    null,
+  );
+  assert.equal(
+    normalizeDisposeMethod('https://www.example.jp/details／https://www.example.jp/details'),
     null,
   );
 });
