@@ -414,7 +414,8 @@ input:focus-visible {
   background: var(--white);
 }
 
-.result-page h2 {
+.result-page .map-section > h2,
+.result-page .sites-section > h2 {
   margin: 20px 0 8px;
   font-size: 1.25rem;
   line-height: 1.45;

@@ -170,6 +170,43 @@ test('特別な持込が必要で回収場所がない品目では断定を避�
   assert.doesNotMatch(html, /\/js\/result\.js/);
 });
 
+test('出し方がURLだけの場合はURLを直接表示せず公式ガイドへ案内する', async () => {
+  const html = await renderResult({
+    title: 'ポラロイドカメラ | ごみ分別・持込ナビ',
+    state: 'empty',
+    item: {
+      id: 1785,
+      name: 'ポラロイドカメラ',
+      dispose_method: null,
+      dispose_method_has_url: true,
+      caution: null,
+      requires_dropoff: false,
+    },
+    badges: ['不燃ごみ'],
+  });
+
+  assert.match(html, /詳しい出し方は千葉市のごみ分別ガイドで確認してください。/);
+  assert.match(html, />千葉市のごみ分別ガイドを確認する<\/a>/);
+  assert.doesNotMatch(html, /https:\/\/www\.city\.chiba\.jp\/example/);
+});
+
+test('特別な持込が必要な品目にURLがある場合も公式ガイドボタンを重複させない', async () => {
+  const html = await renderResult({
+    state: 'empty',
+    item: {
+      id: 72,
+      name: 'テスト品目',
+      dispose_method: null,
+      dispose_method_has_url: true,
+      caution: null,
+      requires_dropoff: true,
+    },
+    badges: ['排出禁止物等'],
+  });
+
+  assert.equal((html.match(/class="button official-guidance-link"/g) || []).length, 1);
+});
+
 test('出し方と注意事項の改行を保ったままHTMLとして安全に表示する', async () => {
   const html = await renderResult({
     state: 'empty',

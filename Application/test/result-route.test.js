@@ -127,6 +127,34 @@ test('特別な持込が必要で回収場所がない品目では案内用の�
   assert.equal(response.data.item.requires_dropoff, true);
 });
 
+test('廃棄方法にURLがある場合はURLを画面用データから分離する', async () => {
+  const databasePool = {
+    async query() {
+      return [[{
+        id: 1785,
+        name: 'ポラロイドカメラ',
+        category: '不燃ごみ',
+        dispose_method: 'https://www.city.chiba.jp/example／https://www.city.chiba.jp/example',
+        caution: null,
+        requires_dropoff: 0,
+        battery: 0,
+        phone: 0,
+        other_electronics: 0,
+      }]];
+    },
+  };
+  const response = createResponse();
+
+  await renderResultPage(
+    { query: { itemId: '1785' } },
+    response,
+    databasePool,
+  );
+
+  assert.equal(response.data.item.dispose_method, null);
+  assert.equal(response.data.item.dispose_method_has_url, true);
+});
+
 test('不正なitemIdではMySQLへ問い合わせず400を返す', async () => {
   const databasePool = {
     async query() {

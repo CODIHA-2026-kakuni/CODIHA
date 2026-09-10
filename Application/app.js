@@ -12,6 +12,7 @@ const pool = require('./db/pool');
 const { filterAndSortItems } = require('./lib/item-search');
 const {
   buildItemBadges,
+  hasDisposeMethodUrl,
   normalizeCaution,
   normalizeDisposeMethod,
   parseItemId,
@@ -196,6 +197,7 @@ async function renderResultPage(req, res, databasePool = pool) {
     const item = {
       ...items[0],
       dispose_method: normalizeDisposeMethod(items[0].dispose_method),
+      dispose_method_has_url: hasDisposeMethodUrl(items[0].dispose_method),
       caution: normalizeCaution(items[0].caution),
       requires_dropoff:
         items[0].requires_dropoff === true || items[0].requires_dropoff === 1,

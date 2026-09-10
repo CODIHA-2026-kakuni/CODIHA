@@ -73,22 +73,36 @@
             <aside class="information-panel" role="status">
               <% if (item.requires_dropoff) { %>
                 <p>この品目は、通常の家庭ごみとして出せない場合があります。表示された分別区分と千葉市の案内を確認してください。</p>
-                <a
-                  class="button official-guidance-link"
-                  href="https://www.city.chiba.jp/kurashi/gomi/gomi/gomiguide/index.html"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >千葉市の案内を確認する</a>
+                <% if (!item.dispose_method_has_url) { %>
+                  <a
+                    class="button official-guidance-link"
+                    href="https://www.city.chiba.jp/kurashi/gomi/gomi/gomiguide/index.html"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >千葉市の案内を確認する</a>
+                <% } %>
               <% } else { %>
                 <p>この品目は、表示された分別区分に従って出してください。</p>
               <% } %>
             </aside>
           <% } %>
 
-          <% if (item !== null && item.dispose_method !== null) { %>
+          <% if (item !== null && (item.dispose_method !== null || item.dispose_method_has_url)) { %>
             <section class="notice-panel" aria-labelledby="dispose-heading">
               <h2 id="dispose-heading">出し方</h2>
-              <p class="guidance-text"><%= item.dispose_method %></p>
+              <% if (item.dispose_method !== null) { %>
+                <p class="guidance-text"><%= item.dispose_method %></p>
+              <% } else { %>
+                <p class="guidance-text">詳しい出し方は千葉市のごみ分別ガイドで確認してください。</p>
+              <% } %>
+              <% if (item.dispose_method_has_url) { %>
+                <a
+                  class="button official-guidance-link"
+                  href="https://www.city.chiba.jp/kurashi/gomi/gomi/gomiguide/index.html"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >千葉市のごみ分別ガイドを確認する</a>
+              <% } %>
             </section>
           <% } else if (item === null) { %>
             <section class="notice-panel" aria-labelledby="dispose-heading">
