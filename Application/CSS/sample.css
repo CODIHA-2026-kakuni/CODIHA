@@ -404,7 +404,18 @@ input:focus-visible {
   color: var(--warning-text);
 }
 
-.result-page h2 {
+.information-panel p {
+  margin: 0;
+}
+
+.official-guidance-link {
+  width: 100%;
+  margin-top: 12px;
+  background: var(--white);
+}
+
+.result-page .map-section > h2,
+.result-page .sites-section > h2 {
   margin: 20px 0 8px;
   font-size: 1.25rem;
   line-height: 1.45;
