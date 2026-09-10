@@ -99,3 +99,40 @@ test('取得エラーでは再試行と検索画面へ戻る操作を表示す�
   assert.match(html, /href="\/result\?itemId=1">再試行<\/a>/);
   assert.match(html, /href="\/">品目検索へ戻る<\/a>/);
 });
+
+test('回収場所がない品目では捨て方だけを表示する', async () => {
+  const html = await renderResult({
+    title: 'アイスピック | 小型家電回収ナビ',
+    state: 'no-site',
+    item: {
+      id: 12,
+      name: 'アイスピック',
+      dispose_method: '紙で包み｢危険｣と書いて不燃ごみ指定袋へ',
+      caution: null,
+    },
+    badges: ['不燃ごみ'],
+  });
+
+  assert.match(html, /小型家電回収ボックスでは回収できません。/);
+  assert.match(html, /紙で包み｢危険｣と書いて不燃ごみ指定袋へ/);
+  assert.doesNotMatch(html, /id="map-heading"/);
+  assert.doesNotMatch(html, /id="sites-heading"/);
+  assert.doesNotMatch(html, /\/js\/result\.js/);
+});
+
+test('捨て方が登録されていない品目では捨て方欄を表示しない', async () => {
+  const html = await renderResult({
+    title: 'アイスノン（保冷剤） | 小型家電回収ナビ',
+    state: 'no-site',
+    item: {
+      id: 13,
+      name: 'アイスノン（保冷剤）',
+      dispose_method: null,
+      caution: null,
+    },
+    badges: ['可燃ごみ'],
+  });
+
+  assert.match(html, /小型家電回収ボックスでは回収できません。/);
+  assert.doesNotMatch(html, /id="dispose-heading"/);
+});

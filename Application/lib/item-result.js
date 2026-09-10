@@ -48,19 +48,34 @@ function buildItemBadges(item) {
 }
 
 /**
- * 空の注意事項は表示せず、文章がある場合は前後の空白だけを取り除く。
+ * 未入力の項目は表示せず、文章がある場合は前後の空白だけを取り除く。
  */
-function normalizeCaution(value) {
+function normalizeOptionalText(value) {
   if (typeof value !== 'string') {
     return null;
   }
 
-  const caution = value.trim();
-  return caution === '' ? null : caution;
+  const text = value.trim();
+  return text === '' ? null : text;
+}
+
+/**
+ * 空の注意事項は表示せず、文章がある場合は前後の空白だけを取り除く。
+ */
+function normalizeCaution(value) {
+  return normalizeOptionalText(value);
+}
+
+/**
+ * 空の廃棄方法は表示せず、文章がある場合は前後の空白だけを取り除く。
+ */
+function normalizeDisposeMethod(value) {
+  return normalizeOptionalText(value);
 }
 
 module.exports = {
   buildItemBadges,
   normalizeCaution,
+  normalizeDisposeMethod,
   parseItemId,
 };
