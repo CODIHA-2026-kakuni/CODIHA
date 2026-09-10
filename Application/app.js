@@ -171,6 +171,7 @@ async function renderResultPage(req, res, databasePool = pool) {
           category,
           dispose_method,
           caution,
+          requires_dropoff,
           battery,
           phone,
           other_electronics
@@ -196,6 +197,8 @@ async function renderResultPage(req, res, databasePool = pool) {
       ...items[0],
       dispose_method: normalizeDisposeMethod(items[0].dispose_method),
       caution: normalizeCaution(items[0].caution),
+      requires_dropoff:
+        items[0].requires_dropoff === true || items[0].requires_dropoff === 1,
     };
     // 回収ボックスの対象外（可燃ごみなど）は、案内できる回収場所がない。
     // その場合は地図と回収場所の一覧を出さず、捨て方だけを表示する。

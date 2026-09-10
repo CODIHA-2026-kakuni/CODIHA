@@ -15,6 +15,7 @@ function renderResult(overrides = {}) {
       name: 'モバイルバッテリー',
       dispose_method: '回収ボックスへ出してください。',
       caution: '発火防止のため、一般ごみには混ぜないでください。',
+      requires_dropoff: true,
     },
     badges: ['小型家電', '充電式電池'],
     retryUrl: '/result?itemId=1',
@@ -39,6 +40,7 @@ test('注意事項がない品目では注意事項欄を表示しない', async
       name: '電子辞書',
       dispose_method: '回収ボックスへ出してください。',
       caution: null,
+      requires_dropoff: true,
     },
   });
 
@@ -114,11 +116,13 @@ test('回収場所がない品目では案内と出し方を表示し、地図�
       name: 'アイスピック',
       dispose_method: '紙で包み｢危険｣と書いて不燃ごみ指定袋へ',
       caution: null,
+      requires_dropoff: false,
     },
     badges: ['不燃ごみ'],
   });
 
-  assert.match(html, /小型家電回収ボックスでは回収できません。/);
+  assert.match(html, /表示された分別区分に従って出してください。/);
+  assert.doesNotMatch(html, /千葉市の案内を確認する/);
   assert.match(html, /紙で包み｢危険｣と書いて不燃ごみ指定袋へ/);
   assert.doesNotMatch(html, /id="map-heading"/);
   assert.doesNotMatch(html, /id="sites-heading"/);
@@ -134,12 +138,36 @@ test('出し方が登録されていない品目では出し方欄を表示し�
       name: 'アイスノン（保冷剤）',
       dispose_method: null,
       caution: null,
+      requires_dropoff: false,
     },
     badges: ['可燃ごみ'],
   });
 
-  assert.match(html, /小型家電回収ボックスでは回収できません。/);
+  assert.match(html, /表示された分別区分に従って出してください。/);
   assert.doesNotMatch(html, /id="dispose-heading"/);
+});
+
+test('特別な持込が必要で回収場所がない品目では断定を避けた案内と公式リンクを表示する', async () => {
+  const html = await renderResult({
+    title: 'エアコン（クーラー） | ごみ分別・持込ナビ',
+    state: 'empty',
+    item: {
+      id: 34,
+      name: 'エアコン（クーラー）',
+      dispose_method: null,
+      caution: null,
+      requires_dropoff: true,
+    },
+    badges: ['家電リサイクル対象'],
+  });
+
+  assert.match(html, /通常の家庭ごみとして出せない場合があります。/);
+  assert.match(html, />千葉市の案内を確認する<\/a>/);
+  assert.match(html, /target="_blank"/);
+  assert.match(html, /rel="noopener noreferrer"/);
+  assert.doesNotMatch(html, /id="map-heading"/);
+  assert.doesNotMatch(html, /id="sites-heading"/);
+  assert.doesNotMatch(html, /\/js\/result\.js/);
 });
 
 test('出し方と注意事項の改行を保ったままHTMLとして安全に表示する', async () => {
@@ -150,6 +178,7 @@ test('出し方と注意事項の改行を保ったままHTMLとして安全に�
       name: 'テスト品目',
       dispose_method: '1行目\n2行目<script>',
       caution: '注意1\n注意2',
+      requires_dropoff: false,
     },
     badges: ['可燃ごみ'],
   });

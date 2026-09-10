@@ -71,7 +71,17 @@
 
           <% if (item !== null && state === 'empty') { %>
             <aside class="information-panel" role="status">
-              この品目は、小型家電回収ボックスでは回収できません。分別区分にしたがって捨ててください。
+              <% if (item.requires_dropoff) { %>
+                <p>この品目は、通常の家庭ごみとして出せない場合があります。表示された分別区分と千葉市の案内を確認してください。</p>
+                <a
+                  class="button official-guidance-link"
+                  href="https://www.city.chiba.jp/kurashi/gomi/gomi/gomiguide/index.html"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >千葉市の案内を確認する</a>
+              <% } else { %>
+                <p>この品目は、表示された分別区分に従って出してください。</p>
+              <% } %>
             </aside>
           <% } %>
 
