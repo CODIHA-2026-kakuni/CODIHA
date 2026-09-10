@@ -6,6 +6,19 @@
   <meta name="theme-color" content="#287d36">
   <title><%= title %></title>
   <link rel="stylesheet" href="/css/sample.css">
+  <% if (item !== null && state === 'pending-location') { %>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    >
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+    ></script>
+  <% } %>
 </head>
 <body>
   <main class="app-shell result-page">
@@ -30,7 +43,11 @@
           </div>
         </section>
       <% } else { %>
-        <article aria-label="選択した品目の回収場所">
+        <article
+          aria-label="選択した品目の情報"
+          data-live-result="<%= item !== null && state === 'pending-location' ? 'true' : 'false' %>"
+          data-item-id="<%= item !== null ? item.id : '' %>"
+        >
           <header class="item-heading" aria-label="選択した品目">
             <% if (item !== null) { %>
               <h1 class="result-item-title"><%= item.name %></h1>
@@ -52,6 +69,25 @@
             <% } %>
           </header>
 
+          <% if (item !== null && state === 'empty') { %>
+            <aside class="information-panel" role="status">
+              この品目は、小型家電回収ボックスでは回収できません。分別区分にしたがって捨ててください。
+            </aside>
+          <% } %>
+
+          <% if (item !== null && item.dispose_method !== null) { %>
+            <section class="notice-panel" aria-labelledby="dispose-heading">
+              <h2 id="dispose-heading">出し方</h2>
+              <p class="guidance-text"><%= item.dispose_method %></p>
+            </section>
+          <% } else if (item === null) { %>
+            <section class="notice-panel" aria-labelledby="dispose-heading">
+              <h2 id="dispose-heading">出し方</h2>
+              <span class="skeleton skeleton-notice-line"></span>
+              <span class="skeleton skeleton-notice-line skeleton-notice-line-short"></span>
+            </section>
+          <% } %>
+
           <% if (item !== null && item.caution !== null) { %>
             <section class="notice-panel" aria-labelledby="caution-heading">
               <h2 id="caution-heading">注意事項</h2>
@@ -71,74 +107,81 @@
             </aside>
           <% } %>
 
-          <section class="map-section" aria-labelledby="map-heading">
-            <h2 id="map-heading">地図</h2>
-            <% if (state === 'pending-location') { %>
-              <div class="map-placeholder" role="img" aria-label="地図の表示は準備中">
-                <span>地図の表示は準備中です。</span>
-              </div>
-            <% } else { %>
-              <div class="map-placeholder" role="img" aria-label="地図の読み込み中">
-                <span>地図を読み込み中です。</span>
-              </div>
-            <% } %>
-          </section>
+          <% if (state === 'pending-location') { %>
+            <aside id="location-information" class="information-panel" role="status" hidden></aside>
+          <% } %>
 
-          <section class="sites-section" aria-labelledby="sites-heading">
-            <h2 id="sites-heading">
-              <% if (state === 'no-location') { %>
-                回収場所（区ごと）
-              <% } else if (state === 'pending-location') { %>
-                回収場所
+          <% /* 回収場所がない通常品目では、地図と一覧を表示しない */ %>
+          <% if (!(item !== null && state === 'empty')) { %>
+            <section class="map-section" aria-labelledby="map-heading">
+              <h2 id="map-heading">地図</h2>
+              <% if (state === 'pending-location') { %>
+                <div
+                  id="map-container"
+                  class="map-placeholder"
+                  role="status"
+                  aria-label="現在地と回収場所を確認中"
+                >
+                  <span>現在地と回収場所を確認しています。</span>
+                </div>
               <% } else { %>
-                回収場所（近い順）
+                <div class="map-placeholder" role="img" aria-label="地図の読み込み中">
+                  <span>地図を読み込み中です。</span>
+                </div>
               <% } %>
-            </h2>
+            </section>
 
-            <% if (state === 'pending-location') { %>
-              <div class="state-panel state-panel-empty" role="status">
-                <p>回収場所の表示は準備中です。</p>
-              </div>
-            <% } %>
-
-            <% if (state === 'loading') { %>
-              <p class="loading-label" role="status">回収場所を読み込み中です。</p>
-              <ol class="site-list site-list-skeleton" aria-hidden="true">
-                <% /* 回収場所カードの配置確認用に、骨組みを3件表示する */ %>
-                <% for (let index = 0; index < 3; index += 1) { %>
-                  <li class="site-card">
-                    <div class="site-card-meta">
-                      <span class="skeleton skeleton-rank"></span>
-                      <span class="skeleton skeleton-ward"></span>
-                      <span class="skeleton skeleton-distance"></span>
-                    </div>
-                    <span class="skeleton skeleton-site-name"></span>
-                    <span class="skeleton skeleton-address"></span>
-                    <span class="skeleton skeleton-hours"></span>
-                    <div class="site-actions">
-                      <button class="button" type="button" disabled>地図で見る</button>
-                      <button class="button" type="button" disabled>Googleマップで経路</button>
-                    </div>
-                  </li>
+            <section class="sites-section" aria-labelledby="sites-heading">
+              <h2 id="sites-heading">
+                <% if (state === 'no-location') { %>
+                  回収場所（区ごと）
+                <% } else if (state === 'pending-location') { %>
+                  回収場所
+                <% } else { %>
+                  回収場所（近い順）
                 <% } %>
-              </ol>
-            <% } %>
+              </h2>
 
-            <% if (state === 'empty') { %>
-              <div class="state-panel state-panel-empty" role="status">
-                <p>この品目を回収できる場所が見つかりませんでした。</p>
-              </div>
-            <% } %>
+              <% if (state === 'pending-location') { %>
+                <div id="sites-loading" aria-busy="true">
+                  <ol class="site-list site-list-skeleton" aria-hidden="true">
+                    <% /* 現在地とAPIの確認中に、施設カードの骨組みを3件表示する */ %>
+                    <% for (let index = 0; index < 3; index += 1) { %>
+                      <li class="site-card">
+                        <div class="site-card-meta">
+                          <span class="skeleton skeleton-rank"></span>
+                          <span class="skeleton skeleton-distance"></span>
+                        </div>
+                        <span class="skeleton skeleton-site-name"></span>
+                        <span class="skeleton skeleton-address"></span>
+                        <span class="skeleton skeleton-hours"></span>
+                        <div class="site-actions">
+                          <button class="button" type="button" disabled>地図で見る</button>
+                          <button class="button" type="button" disabled>Googleマップで経路</button>
+                        </div>
+                      </li>
+                    <% } %>
+                  </ol>
+                </div>
 
-            <% if (state === 'no-location') { %>
-              <div class="ward-list" aria-hidden="true">
-                <% /* 区ごとのまとまりを確認するため、骨組みを2区分表示する */ %>
-                <% for (let wardIndex = 0; wardIndex < 2; wardIndex += 1) { %>
-                  <section class="ward-group">
-                    <span class="skeleton skeleton-ward-heading"></span>
-                    <div class="site-card">
+                <div id="sites-feedback" class="state-panel" role="status" hidden>
+                  <p id="sites-feedback-message"></p>
+                  <button id="sites-retry" class="button" type="button" hidden>再試行</button>
+                </div>
+
+                <div id="sites-results" hidden></div>
+              <% } %>
+
+              <% if (state === 'loading') { %>
+                <p class="loading-label" role="status">回収場所を読み込み中です。</p>
+                <ol class="site-list site-list-skeleton" aria-hidden="true">
+                  <% /* 回収場所カードの配置確認用に、骨組みを3件表示する */ %>
+                  <% for (let index = 0; index < 3; index += 1) { %>
+                    <li class="site-card">
                       <div class="site-card-meta">
                         <span class="skeleton skeleton-rank"></span>
+                        <span class="skeleton skeleton-ward"></span>
+                        <span class="skeleton skeleton-distance"></span>
                       </div>
                       <span class="skeleton skeleton-site-name"></span>
                       <span class="skeleton skeleton-address"></span>
@@ -147,12 +190,38 @@
                         <button class="button" type="button" disabled>地図で見る</button>
                         <button class="button" type="button" disabled>Googleマップで経路</button>
                       </div>
-                    </div>
-                  </section>
-                <% } %>
-              </div>
-            <% } %>
-          </section>
+                    </li>
+                  <% } %>
+                </ol>
+              <% } %>
+
+              <% if (state === 'empty') { %>
+                <div class="state-panel state-panel-empty" role="status">
+                  <p>対応する回収場所が見つかりませんでした。</p>
+                </div>
+              <% } %>
+
+              <% if (state === 'no-location') { %>
+                <div class="ward-list" aria-hidden="true">
+                  <% /* 区ごとのまとまりを確認するため、骨組みを2区分表示する */ %>
+                  <% for (let wardIndex = 0; wardIndex < 2; wardIndex += 1) { %>
+                    <section class="ward-group">
+                      <span class="skeleton skeleton-ward-heading"></span>
+                      <div class="site-card">
+                        <span class="skeleton skeleton-site-name"></span>
+                        <span class="skeleton skeleton-address"></span>
+                        <span class="skeleton skeleton-hours"></span>
+                        <div class="site-actions">
+                          <button class="button" type="button" disabled>地図で見る</button>
+                          <button class="button" type="button" disabled>Googleマップで経路</button>
+                        </div>
+                      </div>
+                    </section>
+                  <% } %>
+                </div>
+              <% } %>
+            </section>
+          <% } %>
         </article>
       <% } %>
     </div>
@@ -160,6 +229,11 @@
     <footer class="page-footer">
       <p>
         出典：<a
+          href="https://www.city.chiba.jp/kurashi/gomi/gomi/gomiguide/index.html"
+          target="_blank"
+          rel="noopener noreferrer"
+        >千葉市 ごみ分別ガイド</a><br>
+        <a
           href="https://www.city.chiba.jp/kankyo/junkan/haikibutsu/kogatakadenn.html"
           target="_blank"
           rel="noopener noreferrer"
@@ -167,5 +241,9 @@
       </p>
     </footer>
   </main>
+
+  <% if (item !== null && state === 'pending-location') { %>
+    <script type="module" src="/js/result.js"></script>
+  <% } %>
 </body>
 </html>

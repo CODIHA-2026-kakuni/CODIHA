@@ -29,6 +29,7 @@ test('正しいitemIdではプレースホルダーを使って品目を取得�
         id: 7,
         name: 'モバイルバッテリー',
         category: '小型家電',
+        dispose_method: ' 回収ボックスへ出してください。 ',
         caution: ' 発火に注意してください。 ',
         battery: 1,
         phone: 0,
@@ -49,9 +50,47 @@ test('正しいitemIdではプレースホルダーを使って品目を取得�
   assert.match(calls[0].sql, /WHERE id = \?/);
   assert.deepEqual(calls[0].parameters, [7]);
   assert.equal(response.data.item.name, 'モバイルバッテリー');
+  assert.equal(response.data.item.dispose_method, '回収ボックスへ出してください。');
   assert.equal(response.data.item.caution, '発火に注意してください。');
   assert.deepEqual(response.data.badges, ['小型家電', '充電式電池']);
   assert.equal(response.data.state, 'pending-location');
+});
+
+test('回収場所がない品目ではempty状態で出し方を表示する', async () => {
+  const calls = [];
+  const databasePool = {
+    async query(sql, parameters) {
+      calls.push({ sql, parameters });
+      return [[{
+        id: 12,
+        name: 'アイスピック',
+        category: '不燃ごみ',
+        dispose_method: ' 紙で包み｢危険｣と書いて不燃ごみ指定袋へ ',
+        caution: null,
+        battery: 0,
+        phone: 0,
+        other_electronics: 0,
+      }]];
+    },
+  };
+  const response = createResponse();
+
+  await renderResultPage(
+    { query: { itemId: '12' } },
+    response,
+    databasePool,
+  );
+
+  assert.equal(response.statusCode, 200);
+  assert.equal(response.view, 'result');
+  assert.match(calls[0].sql, /dispose_method/);
+  assert.equal(response.data.pageState, 'success');
+  assert.equal(response.data.state, 'empty');
+  assert.equal(
+    response.data.item.dispose_method,
+    '紙で包み｢危険｣と書いて不燃ごみ指定袋へ',
+  );
+  assert.deepEqual(response.data.badges, ['不燃ごみ']);
 });
 
 test('不正なitemIdではMySQLへ問い合わせず400を返す', async () => {

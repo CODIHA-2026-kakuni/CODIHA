@@ -4,6 +4,7 @@ const assert = require('node:assert/strict');
 const {
   buildItemBadges,
   normalizeCaution,
+  normalizeDisposeMethod,
   parseItemId,
 } = require('../lib/item-result');
 
@@ -60,4 +61,13 @@ test('空の注意事項をnullにし、文章の前後だけを整える', () =
   assert.equal(normalizeCaution('   '), null);
   assert.equal(normalizeCaution('  発火に注意してください。\n水にぬらさないでください。  '),
     '発火に注意してください。\n水にぬらさないでください。');
+});
+
+test('空の廃棄方法をnullにし、文章の前後だけを整える', () => {
+  assert.equal(normalizeDisposeMethod(null), null);
+  assert.equal(normalizeDisposeMethod('   '), null);
+  assert.equal(
+    normalizeDisposeMethod('  紙で包み｢危険｣と書いて不燃ごみ指定袋へ  '),
+    '紙で包み｢危険｣と書いて不燃ごみ指定袋へ',
+  );
 });
