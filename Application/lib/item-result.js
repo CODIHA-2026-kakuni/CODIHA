@@ -7,8 +7,8 @@ const RECOVERY_TYPE_LABELS = [
 // item.id は MySQL の INT UNSIGNED なので、保存できる最大値も検証する。
 const MAX_UNSIGNED_INT = 4294967295;
 
-// 元データに混ざっているURLを、出し方の説明文と分けるために使う。
-const DISPOSE_METHOD_URL_PATTERN = /https?:\/\/[a-z0-9./?&=#_%:+~-]+/giu;
+// CSV更新前に作成したDockerボリュームにURLが残っていても、画面へ直接表示しない。
+const URL_PATTERN = /https?:\/\/[a-z0-9./?&=#_%:+~-]+/giu;
 
 /**
  * URLから受け取った値を、MySQLで検索できる正の整数へ変換する。
@@ -79,9 +79,8 @@ function normalizeDisposeMethod(value) {
     return null;
   }
 
-  // URLを取り除いた後、区切り記号だけになった部分も除去する。
   const methodWithoutUrls = text
-    .replace(DISPOSE_METHOD_URL_PATTERN, '')
+    .replace(URL_PATTERN, '')
     .split('／')
     .map((part) => part.trim())
     .filter((part) => part !== '')
@@ -90,16 +89,8 @@ function normalizeDisposeMethod(value) {
   return methodWithoutUrls === '' ? null : methodWithoutUrls;
 }
 
-/**
- * 元の廃棄方法にURLが含まれていたかを判定する。
- */
-function hasDisposeMethodUrl(value) {
-  return typeof value === 'string' && /https?:\/\//iu.test(value);
-}
-
 module.exports = {
   buildItemBadges,
-  hasDisposeMethodUrl,
   normalizeCaution,
   normalizeDisposeMethod,
   parseItemId,

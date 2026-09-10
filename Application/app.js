@@ -1,23 +1,14 @@
-// ------------------------------------------------------------
-// Express + Node.js セットアップ
-// ------------------------------------------------------------
-// 事前準備（未実施の場合）:
-//   1. package.json がなければ作成:  npm init -y
-//   2. Express をインストール:      npm install express ejs
-// ------------------------------------------------------------
-
 const path = require('path');
 const express = require('express');
 const pool = require('./db/pool');
 const { filterAndSortItems } = require('./lib/item-search');
 const {
   buildItemBadges,
-  hasDisposeMethodUrl,
   normalizeCaution,
   normalizeDisposeMethod,
   parseItemId,
 } = require('./lib/item-result');
-//lib/site-search.jsの関数を宣言
+// 回収種別、位置情報、施設一覧を処理する関数。
 const {
   getRecoveryTypes,
   parseCoordinates,
@@ -197,7 +188,6 @@ async function renderResultPage(req, res, databasePool = pool) {
     const item = {
       ...items[0],
       dispose_method: normalizeDisposeMethod(items[0].dispose_method),
-      dispose_method_has_url: hasDisposeMethodUrl(items[0].dispose_method),
       caution: normalizeCaution(items[0].caution),
       requires_dropoff:
         items[0].requires_dropoff === true || items[0].requires_dropoff === 1,
@@ -205,8 +195,8 @@ async function renderResultPage(req, res, databasePool = pool) {
     // 回収ボックスの対象外（可燃ごみなど）は、案内できる回収場所がない。
     // その場合は地図と回収場所の一覧を出さず、捨て方だけを表示する。
     const hasRecoverySite = getRecoveryTypes(items[0]).length > 0;
-    // 通常表示では後続機能を「読み込み中」のままにせず、未実装だと分かる状態にする。
-    // ?state=loading を明示した場合は、引き続き画面確認用の骨組みを表示する。
+    // 回収場所がある場合は位置情報の確認を開始し、ない場合は捨て方だけを表示する。
+    // ?state=...を明示した場合は、画面確認用の状態を優先する。
     const state = previewState
       || (hasRecoverySite ? 'pending-location' : 'empty');
 
@@ -240,29 +230,29 @@ app.get('/result', (req, res) => renderResultPage(req, res));
 // ---- 品目に対応する回収場所API ----
 // databasePoolを引数にすることで、テスト時はMySQLへ接続せず動作を確認できる。
 async function getItemSites(req, res, databasePool = pool) {
-  const itemId = parseItemId(req.params.id);//itemのid取得
+  const itemId = parseItemId(req.params.id);
 
   if (itemId === null) {
     return res.status(400).json({ message: SITE_SEARCH_ERROR_MESSAGE });
   }
 
-  const coordinates = parseCoordinates(req.query);//位置情報取得
+  const coordinates = parseCoordinates(req.query);
 
   if (coordinates === null) {
     return res.status(400).json({ message: SITE_SEARCH_ERROR_MESSAGE });
   }
 
-  //try内でエラーが起きたらcatch内の処理を実行する
   try {
-    const [items] = await databasePool.query(//DBのitemテーブルからデータの取得を２回まで
+    // プレースホルダーを使い、指定されたIDの品目を最大1件取得する。
+    const [items] = await databasePool.query(
       `
         SELECT id, battery, phone, other_electronics
         FROM item
-        WHERE id = ? 
+        WHERE id = ?
         LIMIT 1
       `,
       [itemId],
-    );//[itemId]はSQLの?に入る値を指定
+    );
 
     if (items.length === 0) {
       return res.status(404).json({ message: SITE_SEARCH_ERROR_MESSAGE });
@@ -270,15 +260,16 @@ async function getItemSites(req, res, databasePool = pool) {
 
     const recoveryTypes = getRecoveryTypes(items[0]);
 
-    if (recoveryTypes.length === 0) {//回収種別が全てfalseの品目では空配列を返す
+    if (recoveryTypes.length === 0) {
       return res.status(200).json({ sites: [] });
     }
 
+    // 列名はRECOVERY_TYPE_COLUMNSの許可リストから選ばれる。
     const recoveryConditions = recoveryTypes
-      .map((columnName) => `${columnName} = TRUE`)//`battery=TRUE`といった配列の作成
-      .join(' OR ');//`battery=TRUE OR phone=TRUE`のように結合
-    
-    //recoveryConditionsからrecycle_locationのデータを取得する
+      .map((columnName) => `${columnName} = TRUE`)
+      .join(' OR ');
+
+    // 選択品目の回収種別に一つでも対応する施設を取得する。
     const [rows] = await databasePool.query(`
       SELECT id, name, reading, ward, address, latitude, longitude, business_hours
       FROM recycle_location

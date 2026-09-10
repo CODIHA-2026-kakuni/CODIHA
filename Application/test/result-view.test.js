@@ -122,14 +122,14 @@ test('回収場所がない品目では案内と出し方を表示し、地図�
   });
 
   assert.match(html, /表示された分別区分に従って出してください。/);
-  assert.doesNotMatch(html, /千葉市の案内を確認する/);
+  assert.match(html, />千葉市の案内を確認する<\/a>/);
   assert.match(html, /紙で包み｢危険｣と書いて不燃ごみ指定袋へ/);
   assert.doesNotMatch(html, /id="map-heading"/);
   assert.doesNotMatch(html, /id="sites-heading"/);
   assert.doesNotMatch(html, /\/js\/result\.js/);
 });
 
-test('出し方が登録されていない品目では出し方欄を表示しない', async () => {
+test('出し方が登録されていない品目では公式ガイドへの案内を表示する', async () => {
   const html = await renderResult({
     title: 'アイスノン（保冷剤） | ごみ分別・持込ナビ',
     state: 'empty',
@@ -144,7 +144,9 @@ test('出し方が登録されていない品目では出し方欄を表示し�
   });
 
   assert.match(html, /表示された分別区分に従って出してください。/);
-  assert.doesNotMatch(html, /id="dispose-heading"/);
+  assert.match(html, /id="dispose-heading"/);
+  assert.match(html, /詳しい出し方は千葉市のごみ分別ガイドで確認してください。/);
+  assert.match(html, />千葉市の案内を確認する<\/a>/);
 });
 
 test('特別な持込が必要で回収場所がない品目では断定を避けた案内と公式リンクを表示する', async () => {
@@ -170,34 +172,13 @@ test('特別な持込が必要で回収場所がない品目では断定を避�
   assert.doesNotMatch(html, /\/js\/result\.js/);
 });
 
-test('出し方がURLだけの場合はURLを直接表示せず公式ガイドへ案内する', async () => {
-  const html = await renderResult({
-    title: 'ポラロイドカメラ | ごみ分別・持込ナビ',
-    state: 'empty',
-    item: {
-      id: 1785,
-      name: 'ポラロイドカメラ',
-      dispose_method: null,
-      dispose_method_has_url: true,
-      caution: null,
-      requires_dropoff: false,
-    },
-    badges: ['不燃ごみ'],
-  });
-
-  assert.match(html, /詳しい出し方は千葉市のごみ分別ガイドで確認してください。/);
-  assert.match(html, />千葉市のごみ分別ガイドを確認する<\/a>/);
-  assert.doesNotMatch(html, /https:\/\/www\.city\.chiba\.jp\/example/);
-});
-
-test('特別な持込が必要な品目にURLがある場合も公式ガイドボタンを重複させない', async () => {
+test('特別な持込が必要な品目でも公式ガイドボタンを重複させない', async () => {
   const html = await renderResult({
     state: 'empty',
     item: {
       id: 72,
       name: 'テスト品目',
       dispose_method: null,
-      dispose_method_has_url: true,
       caution: null,
       requires_dropoff: true,
     },
