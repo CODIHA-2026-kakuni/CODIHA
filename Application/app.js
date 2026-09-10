@@ -13,6 +13,7 @@ const { filterAndSortItems } = require('./lib/item-search');
 const {
   buildItemBadges,
   normalizeCaution,
+  normalizeDisposeMethod,
   parseItemId,
 } = require('./lib/item-result');
 //lib/site-search.jsの関数を宣言
@@ -30,7 +31,13 @@ const PORT = process.env.PORT || 3000;
 // UI確認用に受け付ける画面状態。
 // 通常アクセスでは使わず、?state=...を指定した場合だけ表示確認に使う。
 const SEARCH_PAGE_STATES = new Set(['loading', 'empty', 'error']);
-const RESULT_PAGE_STATES = new Set(['loading', 'empty', 'error', 'no-location']);
+const RESULT_PAGE_STATES = new Set([
+  'loading',
+  'empty',
+  'error',
+  'no-location',
+  'no-site',
+]);
 
 function getPreviewState(queryState, allowedStates) {
   if (typeof queryState === 'string' && allowedStates.has(queryState)) {
@@ -164,6 +171,7 @@ async function renderResultPage(req, res, databasePool = pool) {
           id,
           name,
           category,
+          dispose_method,
           caution,
           battery,
           phone,
@@ -186,25 +194,18 @@ async function renderResultPage(req, res, databasePool = pool) {
       });
     }
 
-    // このサービスの対象外である小型家電以外の品目は表示しない。
-    if (getRecoveryTypes(items[0]).length === 0) {
-      return res.status(404).render('result', {
-        title: '品目が見つかりません | 小型家電回収ナビ',
-        pageState: 'not-found',
-        state: 'loading',
-        item: null,
-        badges: [],
-        retryUrl: `/result?itemId=${itemId}`,
-      });
-    }
-
     const item = {
       ...items[0],
+      dispose_method: normalizeDisposeMethod(items[0].dispose_method),
       caution: normalizeCaution(items[0].caution),
     };
+    // 回収ボックスの対象外（可燃ごみなど）は、案内できる回収場所がない。
+    // その場合は地図と回収場所の一覧を出さず、捨て方だけを表示する。
+    const hasRecoverySite = getRecoveryTypes(items[0]).length > 0;
     // 通常表示では後続機能を「読み込み中」のままにせず、未実装だと分かる状態にする。
     // ?state=loading を明示した場合は、引き続き画面確認用の骨組みを表示する。
-    const state = previewState || 'pending-location';
+    const state = previewState
+      || (hasRecoverySite ? 'pending-location' : 'no-site');
 
     return res.render('result', {
       title: `${item.name} | 小型家電回収ナビ`,
