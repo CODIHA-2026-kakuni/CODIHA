@@ -61,12 +61,11 @@ app.use(express.urlencoded({ extended: true }));
 // 例: Application/CSS/sample.css → http://localhost:3000/css/sample.css
 app.use('/css', express.static(path.join(__dirname, 'CSS')));
 
-// Application/public 配下は、静的HTML等の置き場として公開する
-// 例: Application/public/about.html → http://localhost:3000/about.html
+// Application/public 配下のJavaScriptなどを、そのままのパスで公開する
+// 例: Application/public/js/result.js → http://localhost:3000/js/result.js
 app.use(express.static(path.join(__dirname, 'public')));
 
 // ---- 品目検索画面 ----
-// databasePoolを引数にすることで、テスト時はMySQLへ接続せず動作を確認できる。
 async function renderSearchPage(req, res, databasePool = pool) {
   const query = getSearchQuery(req.query.q);
   const previewState = getPreviewState(req.query.state, SEARCH_PAGE_STATES);
@@ -125,11 +124,10 @@ async function renderSearchPage(req, res, databasePool = pool) {
 app.get('/', (req, res) => renderSearchPage(req, res));
 
 // ---- 選択した品目の結果画面 ----
-// databasePoolを引数にすることで、テスト時はMySQLへ接続せず動作を確認できる。
 async function renderResultPage(req, res, databasePool = pool) {
   const previewState = getPreviewState(req.query.state, RESULT_PAGE_STATES);
 
-  // itemIdがない画面確認用URLは、従来どおり骨組みを表示する。
+  // itemIdがない画面確認用URLでは、骨組みを表示する。
   if (req.query.itemId === undefined && previewState !== null) {
     return res.render('result', {
       title: 'ごみ分別・持込ナビ | 回収場所',
@@ -228,7 +226,6 @@ async function renderResultPage(req, res, databasePool = pool) {
 app.get('/result', (req, res) => renderResultPage(req, res));
 
 // ---- 品目に対応する回収場所API ----
-// databasePoolを引数にすることで、テスト時はMySQLへ接続せず動作を確認できる。
 async function getItemSites(req, res, databasePool = pool) {
   const itemId = parseItemId(req.params.id);
 
@@ -290,7 +287,7 @@ async function getItemSites(req, res, databasePool = pool) {
 app.get('/api/items/:id/sites', (req, res) => getItemSites(req, res));
 
 // ---- サーバー起動 ----
-// テストからapp.jsを読み込んだだけでは、待受を開始しない。
+// app.jsが直接実行された場合だけ、リクエストの待受を開始する。
 if (require.main === module) {
   app.listen(PORT, () => {
     console.log(`Server is running at http://localhost:${PORT}`);

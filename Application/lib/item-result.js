@@ -7,7 +7,7 @@ const RECOVERY_TYPE_LABELS = [
 // item.id は MySQL の INT UNSIGNED なので、保存できる最大値も検証する。
 const MAX_UNSIGNED_INT = 4294967295;
 
-// CSV更新前に作成したDockerボリュームにURLが残っていても、画面へ直接表示しない。
+// 廃棄方法にURLが含まれている場合は、画面へ直接表示しない。
 const URL_PATTERN = /https?:\/\/[a-z0-9./?&=#_%:+~-]+/giu;
 
 /**

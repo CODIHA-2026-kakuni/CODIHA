@@ -66,7 +66,7 @@
         <% if (state === 'loading') { %>
           <p class="loading-label" role="status">品目を読み込み中です。</p>
           <ul class="item-list item-list-skeleton" aria-hidden="true">
-            <% /* 品目一覧の配置確認用に、骨組みを6件表示する */ %>
+            <% /* 品目一覧の読み込み中に、骨組みを6件表示する */ %>
             <% for (let index = 0; index < 6; index += 1) { %>
               <li class="item-row skeleton-item-row">
                 <span class="skeleton skeleton-item-name"></span>

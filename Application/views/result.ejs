@@ -189,7 +189,7 @@
               <% if (state === 'loading') { %>
                 <p class="loading-label" role="status">回収場所を読み込み中です。</p>
                 <ol class="site-list site-list-skeleton" aria-hidden="true">
-                  <% /* 回収場所カードの配置確認用に、骨組みを3件表示する */ %>
+                  <% /* 回収場所の読み込み中に、カードの骨組みを3件表示する */ %>
                   <% for (let index = 0; index < 3; index += 1) { %>
                     <li class="site-card">
                       <div class="site-card-meta">
@@ -217,7 +217,7 @@
 
               <% if (state === 'no-location') { %>
                 <div class="ward-list" aria-hidden="true">
-                  <% /* 区ごとのまとまりを確認するため、骨組みを2区分表示する */ %>
+                  <% /* 位置情報なしの場合に、区ごとの骨組みを2区分表示する */ %>
                   <% for (let wardIndex = 0; wardIndex < 2; wardIndex += 1) { %>
                     <section class="ward-group">
                       <span class="skeleton skeleton-ward-heading"></span>
