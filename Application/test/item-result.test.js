@@ -3,7 +3,6 @@ const assert = require('node:assert/strict');
 
 const {
   buildItemBadges,
-  hasDisposeMethodUrl,
   normalizeCaution,
   normalizeDisposeMethod,
   parseItemId,
@@ -73,17 +72,20 @@ test('空の廃棄方法をnullにし、文章の前後だけを整える', () =
   );
 });
 
-test('廃棄方法から重複したURLを除き、URLがあったことを判定する', () => {
-  const value = 'https://www.city.chiba.jp/example／https://www.city.chiba.jp/example';
-
-  assert.equal(normalizeDisposeMethod(value), null);
-  assert.equal(hasDisposeMethodUrl(value), true);
+test('説明文とURLが混在する場合は説明文だけを残す', () => {
+  assert.equal(
+    normalizeDisposeMethod('購入店へ相談／https://www.example.jp/details'),
+    '購入店へ相談',
+  );
 });
 
-test('廃棄方法に説明文とURLがある場合は説明文だけを残す', () => {
-  const value = '購入店、メーカーなどに相談／https://www.example.jp/details';
-
-  assert.equal(normalizeDisposeMethod(value), '購入店、メーカーなどに相談');
-  assert.equal(hasDisposeMethodUrl(value), true);
-  assert.equal(hasDisposeMethodUrl('不燃ごみ指定袋へ'), false);
+test('URLだけまたは重複したURLだけの場合はnullを返す', () => {
+  assert.equal(
+    normalizeDisposeMethod('https://www.example.jp/details'),
+    null,
+  );
+  assert.equal(
+    normalizeDisposeMethod('https://www.example.jp/details／https://www.example.jp/details'),
+    null,
+  );
 });

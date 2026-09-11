@@ -9,8 +9,8 @@
 #   docker compose down        # 停止・コンテナ削除
 #   docker compose down -v     # 停止・コンテナ・DBボリュームまで削除
 #
-# 初回のみ: DB起動後にスキーマを流し込む
-#   docker compose exec -T db mysql -u codiha -pcodiha codiha < Application/SQL/001_init.sql
+# DBの初回起動時は Application/SQL 配下のSQLとCSVを自動で読み込む
+# 認証値を変更する場合は .env.example をコピーして .env を作成する
 # =====================================================================
 
 services:
@@ -25,13 +25,13 @@ services:
       - ./Application:/app
       - /app/node_modules
     environment:
-      - NODE_ENV=development
-      - PORT=3000
-      - DB_HOST=db
-      - DB_PORT=3306
-      - DB_USER=codiha
-      - DB_PASSWORD=codiha
-      - DB_NAME=codiha
+      NODE_ENV: development
+      PORT: 3000
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_USER: ${DB_USER:-codiha}
+      DB_PASSWORD: ${DB_PASSWORD:-codiha}
+      DB_NAME: ${DB_NAME:-codiha}
     depends_on:
       db:
         condition: service_healthy
@@ -44,17 +44,17 @@ services:
     # LOAD DATA INFILEでSQL/配下のCSVを読み込めるようsecure_file_privの許可先を広げる
     command: --secure-file-priv=/docker-entrypoint-initdb.d
     environment:
-      - MYSQL_ROOT_PASSWORD=rootpassword
-      - MYSQL_DATABASE=codiha
-      - MYSQL_USER=codiha
-      - MYSQL_PASSWORD=codiha
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpassword}
+      MYSQL_DATABASE: ${DB_NAME:-codiha}
+      MYSQL_USER: ${DB_USER:-codiha}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-codiha}
     ports:
       - "3306:3306"   # ホストから直接接続したい場合用（不要なら削除してよい）
     volumes:
       - db_data:/var/lib/mysql
       - ./Application/SQL:/docker-entrypoint-initdb.d   # 初回起動時にSQL/配下を自動実行
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpassword"]
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p\"$${MYSQL_ROOT_PASSWORD}\""]
       interval: 5s
       timeout: 5s
       retries: 10

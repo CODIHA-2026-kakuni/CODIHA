@@ -127,14 +127,14 @@ test('特別な持込が必要で回収場所がない品目では案内用の�
   assert.equal(response.data.item.requires_dropoff, true);
 });
 
-test('廃棄方法にURLがある場合はURLを画面用データから分離する', async () => {
+test('古いDBの出し方に残ったURLを画面用データから除く', async () => {
   const databasePool = {
     async query() {
       return [[{
         id: 1785,
         name: 'ポラロイドカメラ',
         category: '不燃ごみ',
-        dispose_method: 'https://www.city.chiba.jp/example／https://www.city.chiba.jp/example',
+        dispose_method: 'https://www.example.jp/details／https://www.example.jp/details',
         caution: null,
         requires_dropoff: 0,
         battery: 0,
@@ -151,8 +151,9 @@ test('廃棄方法にURLがある場合はURLを画面用データから分離�
     databasePool,
   );
 
+  assert.equal(response.statusCode, 200);
   assert.equal(response.data.item.dispose_method, null);
-  assert.equal(response.data.item.dispose_method_has_url, true);
+  assert.equal(response.data.state, 'empty');
 });
 
 test('不正なitemIdではMySQLへ問い合わせず400を返す', async () => {
