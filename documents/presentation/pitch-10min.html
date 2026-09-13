@@ -1,0 +1,654 @@
+<meta charset="utf-8">
+<title>CODIHA 10分ピッチ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@500;700;900&family=Noto+Sans+JP:wght@400;500;700&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<style>
+:root{
+  --ink:#17211a; --ink-soft:#516256; --ink-faint:#7d8d82;
+  --paper:#eff2ec; --surface:#ffffff; --surface-2:#f6f8f4;
+  --line:#d5ddd3; --line-soft:#e5eae2;
+  --green:#4d6b56; --green-deep:#2c4234; --green-wash:#e6efe7;
+  --amber:#c3850f; --amber-wash:#fbf0d8;
+  --red:#b5332f; --red-wash:#fbeceb;
+  --shadow:0 1px 2px rgba(23,33,26,.06), 0 12px 32px rgba(23,33,26,.08);
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --ink:#e7ece6; --ink-soft:#a5b5a8; --ink-faint:#7e8d81;
+    --paper:#11150f; --surface:#191f19; --surface-2:#202720;
+    --line:#2d372e; --line-soft:#242c25;
+    --green:#94bb9e; --green-deep:#cfe2d3; --green-wash:#1d281f;
+    --amber:#eab040; --amber-wash:#2b2210;
+    --red:#e08a86; --red-wash:#2c1917;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 14px 34px rgba(0,0,0,.35);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --ink:#e7ece6; --ink-soft:#a5b5a8; --ink-faint:#7e8d81;
+  --paper:#11150f; --surface:#191f19; --surface-2:#202720;
+  --line:#2d372e; --line-soft:#242c25;
+  --green:#94bb9e; --green-deep:#cfe2d3; --green-wash:#1d281f;
+  --amber:#eab040; --amber-wash:#2b2210;
+  --red:#e08a86; --red-wash:#2c1917;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 14px 34px rgba(0,0,0,.35);
+  color-scheme:dark;
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:"Noto Sans JP","Hiragino Kaku Gothic ProN",system-ui,sans-serif;
+  display:flex; flex-direction:column; min-height:100dvh;
+}
+.deck{
+  flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:14px; padding:16px; padding-block:18px 10px;
+}
+
+/* ---------- ステージ（16:9） ---------- */
+.stage{
+  --u:2.05cqi;
+  width:100%; max-width:calc((100dvh - 190px) * 16 / 9);
+  aspect-ratio:16/9; container-type:inline-size;
+  background:var(--surface); border:1px solid var(--line); border-radius:4px;
+  box-shadow:var(--shadow); position:relative; overflow:hidden;
+}
+.slide{
+  position:absolute; inset:0; padding:calc(var(--u)*2.2) calc(var(--u)*2.8);
+  display:none; flex-direction:column; gap:calc(var(--u)*1.15); overflow:hidden;
+  font-size:var(--u); line-height:1.6; color:var(--ink);
+}
+.slide[data-current]{display:flex}
+.slide::after{
+  content:""; position:absolute; left:0; top:0; bottom:0; width:calc(var(--u)*.45);
+  background:var(--green);
+}
+.slide[data-tone="title"]::after{background:var(--amber)}
+
+/* ---------- 見出し ---------- */
+.kicker{
+  display:flex; align-items:baseline; gap:calc(var(--u)*.8);
+  font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:calc(var(--u)*.86);
+  letter-spacing:.14em; text-transform:uppercase; color:var(--ink-faint);
+}
+.kicker b{color:var(--amber); font-weight:600}
+.kicker .sec{font-family:"Noto Sans JP",sans-serif; letter-spacing:.08em; color:var(--ink-soft); font-weight:500}
+h1{
+  font-family:"Zen Kaku Gothic New","Noto Sans JP",sans-serif; font-weight:900;
+  font-size:calc(var(--u)*3); line-height:1.16; letter-spacing:.01em; margin:0;
+  text-wrap:balance;
+}
+h2{
+  font-family:"Zen Kaku Gothic New","Noto Sans JP",sans-serif; font-weight:700;
+  font-size:calc(var(--u)*1.9); line-height:1.3; margin:0; text-wrap:balance;
+}
+.lede{font-size:calc(var(--u)*1.05); color:var(--ink-soft); max-width:62ch; margin:0}
+.slide p{margin:0}
+
+/* ---------- 汎用レイアウト ---------- */
+.cols{display:grid; gap:calc(var(--u)*1.3); align-items:start}
+.c2{grid-template-columns:1fr 1fr}
+.c2w{grid-template-columns:1.15fr .85fr}
+.c3{grid-template-columns:repeat(3,1fr)}
+.stack{display:flex; flex-direction:column; gap:calc(var(--u)*.75)}
+.grow{flex:1; min-height:0}
+
+/* ---------- 部品 ---------- */
+.panel{
+  background:var(--surface-2); border:1px solid var(--line-soft);
+  padding:calc(var(--u)*1.05) calc(var(--u)*1.2); display:flex; flex-direction:column;
+  gap:calc(var(--u)*.5);
+}
+.panel h3{
+  margin:0; font-family:"Zen Kaku Gothic New",sans-serif; font-weight:700;
+  font-size:calc(var(--u)*1.02); color:var(--green-deep);
+}
+.panel p{font-size:calc(var(--u)*.88); color:var(--ink-soft)}
+.list{margin:0; padding:0; list-style:none; display:flex; flex-direction:column; gap:calc(var(--u)*.62)}
+.list li{
+  position:relative; padding-left:calc(var(--u)*1.15); font-size:calc(var(--u)*.95);
+  color:var(--ink); line-height:1.55;
+}
+.list li::before{
+  content:""; position:absolute; left:0; top:calc(var(--u)*.62);
+  width:calc(var(--u)*.42); height:calc(var(--u)*.42); background:var(--green);
+}
+.list li span{color:var(--ink-soft); font-size:calc(var(--u)*.84); display:block}
+.tag{
+  display:inline-flex; align-items:center; gap:.4em; padding:.22em .7em;
+  font-size:calc(var(--u)*.76); font-weight:500; letter-spacing:.04em;
+  background:var(--green-wash); color:var(--green-deep); border-radius:999px;
+}
+.tag.amber{background:var(--amber-wash); color:var(--amber)}
+.tag.red{background:var(--red-wash); color:var(--red)}
+.mono{font-family:"IBM Plex Mono",ui-monospace,monospace; font-variant-numeric:tabular-nums}
+code{
+  font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:calc(var(--u)*.82);
+  background:var(--green-wash); color:var(--green-deep); padding:.15em .45em;
+}
+
+/* 数値タイル（タイトルのみ） */
+.figs{display:grid; grid-template-columns:repeat(3,auto); gap:calc(var(--u)*2.4)}
+.fig b{
+  display:block; font-family:"IBM Plex Mono",monospace; font-weight:600;
+  font-size:calc(var(--u)*2.2); line-height:1; color:var(--green-deep);
+  font-variant-numeric:tabular-nums;
+}
+.fig span{font-size:calc(var(--u)*.82); color:var(--ink-soft); letter-spacing:.06em}
+.credits{
+  display:flex; flex-wrap:wrap; gap:calc(var(--u)*.5) calc(var(--u)*1.4);
+  font-size:calc(var(--u)*.88); color:var(--ink-soft); border-top:1px solid var(--line);
+  padding-top:calc(var(--u)*.8); margin-top:auto;
+}
+.credits b{color:var(--ink); font-weight:700}
+
+/* 手順チェーン */
+.chain{display:grid; grid-template-columns:repeat(4,1fr); gap:calc(var(--u)*.6)}
+.step{
+  background:var(--surface-2); border:1px solid var(--line-soft); border-top:calc(var(--u)*.2) solid var(--line);
+  padding:calc(var(--u)*.85) calc(var(--u)*.9); display:flex; flex-direction:column; gap:calc(var(--u)*.4);
+}
+.step .n{
+  font-family:"IBM Plex Mono",monospace; font-size:calc(var(--u)*.8); color:var(--ink-faint);
+  letter-spacing:.1em;
+}
+.step p{font-size:calc(var(--u)*.86); line-height:1.5}
+.step.fix{background:var(--green-wash); border-color:var(--green); border-top-color:var(--green)}
+.step.fix .n{color:var(--green-deep)}
+.verdict{
+  display:flex; align-items:center; gap:calc(var(--u)*.7); font-size:calc(var(--u)*.95);
+  color:var(--ink-soft); border-left:calc(var(--u)*.2) solid var(--amber);
+  padding-left:calc(var(--u)*.8);
+}
+
+/* アプリのモック */
+.mock{
+  background:var(--surface); border:1px solid var(--line); border-radius:calc(var(--u)*.3);
+  overflow:hidden; display:flex; flex-direction:column; box-shadow:var(--shadow);
+}
+.mock .bar{
+  background:var(--green-deep); color:#f4f8f4; padding:calc(var(--u)*.45) calc(var(--u)*.8);
+  font-size:calc(var(--u)*.78); letter-spacing:.06em; display:flex; justify-content:space-between;
+}
+.mock .body{padding:calc(var(--u)*.85); display:flex; flex-direction:column; gap:calc(var(--u)*.55)}
+.field{
+  border:1px solid var(--line); background:var(--surface-2); padding:calc(var(--u)*.5) calc(var(--u)*.7);
+  font-size:calc(var(--u)*.9); color:var(--ink); display:flex; justify-content:space-between; align-items:center;
+}
+.field .cursor{width:1px; height:1.1em; background:var(--green); display:inline-block; margin-left:.15em}
+.field .cnt{font-size:calc(var(--u)*.74); color:var(--ink-faint)}
+.rows{display:flex; flex-direction:column; border-top:1px solid var(--line-soft)}
+.row{
+  display:flex; justify-content:space-between; align-items:baseline; gap:calc(var(--u)*.5);
+  padding:calc(var(--u)*.42) calc(var(--u)*.2); border-bottom:1px solid var(--line-soft);
+  font-size:calc(var(--u)*.88);
+}
+.row .yomi{font-size:calc(var(--u)*.74); color:var(--ink-faint)}
+.row.hit{background:var(--amber-wash)}
+.kv{display:grid; grid-template-columns:auto 1fr; gap:calc(var(--u)*.3) calc(var(--u)*.8); font-size:calc(var(--u)*.86)}
+.kv dt{color:var(--ink-faint); white-space:nowrap}
+.kv dd{margin:0; color:var(--ink)}
+.site{
+  display:grid; grid-template-columns:auto 1fr auto; gap:calc(var(--u)*.6); align-items:center;
+  padding:calc(var(--u)*.5) 0; border-bottom:1px solid var(--line-soft); font-size:calc(var(--u)*.86);
+}
+.site .rank{
+  width:1.7em; height:1.7em; display:grid; place-items:center; background:var(--green); color:#fff;
+  font-family:"IBM Plex Mono",monospace; font-size:calc(var(--u)*.78); border-radius:50%;
+}
+.site .meta{display:block; margin-top:.15em; font-size:calc(var(--u)*.74); color:var(--ink-faint); line-height:1.4}
+.site .dist{font-family:"IBM Plex Mono",monospace; color:var(--green-deep); font-weight:600; font-variant-numeric:tabular-nums}
+.btnrow{display:flex; gap:calc(var(--u)*.45); margin-top:calc(var(--u)*.3)}
+.btn{
+  font-size:calc(var(--u)*.76); padding:.3em .8em; border:1px solid var(--green);
+  color:var(--green-deep); background:transparent;
+}
+.btn.solid{background:var(--green); color:#fff; border-color:var(--green)}
+
+/* 構成図 */
+.arch{display:grid; grid-template-columns:1fr auto 1fr auto 1fr; align-items:center; gap:calc(var(--u)*.5)}
+.node{
+  border:1px solid var(--line); background:var(--surface-2); padding:calc(var(--u)*.9);
+  display:flex; flex-direction:column; gap:calc(var(--u)*.3); text-align:center;
+}
+.node b{font-family:"Zen Kaku Gothic New",sans-serif; font-size:calc(var(--u)*1); color:var(--green-deep)}
+.node span{font-size:calc(var(--u)*.78); color:var(--ink-soft); line-height:1.45}
+.node.host{border-style:dashed}
+.arrow{
+  font-family:"IBM Plex Mono",monospace; color:var(--ink-faint); font-size:calc(var(--u)*.95);
+  display:flex; flex-direction:column; align-items:center; gap:.2em;
+}
+.arrow small{font-size:calc(var(--u)*.66); letter-spacing:.04em}
+
+/* ---------- 下部の操作バー ---------- */
+.pace{
+  width:100%; max-width:calc((100dvh - 190px) * 16 / 9);
+  display:flex; flex-direction:column; gap:6px;
+}
+.segs{display:flex; gap:2px; height:7px; position:relative}
+.seg{background:var(--line); transition:background .2s}
+.seg.done{background:var(--green)}
+.seg.now{background:var(--amber)}
+.marker{position:absolute; top:-3px; bottom:-3px; width:2px; background:var(--ink); transition:left .5s linear}
+.controls{
+  display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+  font-size:13px; color:var(--ink-soft);
+}
+.controls .mono{font-size:13px}
+.spacer{flex:1}
+button.ui{
+  font:inherit; font-family:"IBM Plex Mono",monospace; color:var(--ink); background:var(--surface);
+  border:1px solid var(--line); padding:4px 12px; cursor:pointer; border-radius:2px;
+}
+button.ui:hover{border-color:var(--green); color:var(--green-deep)}
+button.ui:focus-visible, .stage:focus-visible{outline:2px solid var(--amber); outline-offset:2px}
+button.ui[aria-pressed="true"]{background:var(--green-wash); border-color:var(--green); color:var(--green-deep)}
+#clock{font-family:"IBM Plex Mono",monospace; font-size:17px; font-weight:600; color:var(--ink); font-variant-numeric:tabular-nums}
+#clock.over{color:var(--red)}
+#lag{font-family:"IBM Plex Mono",monospace; font-size:13px}
+#lag.ahead{color:var(--green)} #lag.behind{color:var(--red)}
+.notes{
+  width:100%; max-width:calc((100dvh - 190px) * 16 / 9);
+  background:var(--surface); border:1px solid var(--line); border-left:3px solid var(--amber);
+  padding:12px 16px; font-size:14px; line-height:1.75; color:var(--ink-soft);
+}
+.notes b{color:var(--ink); font-weight:700}
+.hint{font-size:12px; color:var(--ink-faint); letter-spacing:.02em}
+
+@media (max-width:760px){
+  .stage{--u:15px; aspect-ratio:auto; max-width:none; container-type:normal}
+  .slide{position:static; padding:20px 18px 24px}
+  .slide:not([data-current]){display:none}
+  .c2,.c2w,.c3,.chain,.arch{grid-template-columns:1fr}
+  .arch .arrow{transform:rotate(90deg)}
+  .figs{grid-template-columns:repeat(3,1fr); gap:12px}
+  .pace,.notes{max-width:none}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none !important}}
+@media print{
+  .pace,.controls,.hint{display:none}
+  body{background:#fff}
+  .stage{--u:11px; max-width:none; aspect-ratio:16/9; box-shadow:none; page-break-after:always}
+  .slide{display:flex !important; position:absolute}
+}
+</style>
+
+<div class="deck">
+  <div class="stage" id="stage" tabindex="0" aria-label="スライド">
+
+    <!-- 1 -->
+    <section class="slide" data-tone="title" data-budget="30" data-sec="タイトル">
+      <p class="kicker"><b>01</b><span class="sec">CODIHA</span></p>
+      <h1>ごみの「調べる」と「持っていく」を、<br>ひとつの画面に。</h1>
+      <p class="lede">CODIHA（コディハ）は、千葉市のごみ品目の捨て方を調べ、小型家電はそのまま近い回収場所まで案内するWebアプリケーションです。</p>
+      <div class="figs">
+        <div class="fig"><b>2,058</b><span>登録品目</span></div>
+        <div class="fig"><b>89</b><span>小型家電の回収対象</span></div>
+        <div class="fig"><b>30</b><span>回収施設</span></div>
+      </div>
+      <p class="credits"><span><b>チーム角煮</b></span><span>大久保壮葵・大菅海兎・梅澤颯太・薄井悠希</span><span class="mono">Node.js 20 / Express 5 / MySQL 8.4 / Docker</span></p>
+      <div hidden class="note-src"><b>0:30</b>／チーム名と作ったものを一文で。「千葉市のごみを調べて、小型家電なら回収場所まで案内するアプリです」。数字3つ（2,058品目・89品目・30施設）は規模の説明なので、指差す程度で次へ。</div>
+    </section>
+
+    <!-- 2 -->
+    <section class="slide" data-budget="60" data-sec="課題">
+      <p class="kicker"><b>02</b><span class="sec">背景と課題</span></p>
+      <h2>小型家電は、捨てるまでに4回も調べ直す</h2>
+      <div class="chain">
+        <div class="step"><span class="n">STEP 1</span><p>千葉市のHPやごみ分別アプリで品目を検索する</p></div>
+        <div class="step"><span class="n">STEP 2</span><p>「回収ボックスへ持込」と書かれていて、家庭ごみに出せないと知る</p></div>
+        <div class="step"><span class="n">STEP 3</span><p>回収場所の一覧ページを開き、自分に近い施設を探す</p></div>
+        <div class="step"><span class="n">STEP 4</span><p>住所をコピーして地図アプリに貼り、経路を調べる</p></div>
+      </div>
+      <p class="verdict">情報が「分別ガイド」「回収案内」「施設一覧」「地図」に分かれているため、<b>調べ始めてから家を出るまでに離脱しやすい</b>。結果として、小型家電が不燃ごみに混ざる。</p>
+      <div hidden class="note-src"><b>1:00</b>／自分がモバイルバッテリーを捨てようとしたときの実体験として話す。4ステップを順に指でたどり、最後の一文「4回も調べ直すのが面倒で、結局不燃ごみに入れてしまう」で課題を締める。</div>
+    </section>
+
+    <!-- 3 -->
+    <section class="slide" data-budget="60" data-sec="解決">
+      <h2>CODIHAは、その4ステップを1つの流れにする</h2>
+      <div class="chain">
+        <div class="step fix"><span class="n">品目を検索</span><p>2,058品目から、読み仮名でも探せる</p></div>
+        <div class="step fix"><span class="n">捨て方を表示</span><p>分別区分・出し方・注意事項をそのまま表示</p></div>
+        <div class="step fix"><span class="n">回収場所を判定</span><p>小型家電ならその品目を受け入れる施設だけを抽出</p></div>
+        <div class="step fix"><span class="n">近い順に案内</span><p>現在地からの直線距離順＋地図＋経路リンク</p></div>
+      </div>
+      <div class="cols c3">
+        <div class="panel"><h3>迷わせない</h3><p>回収場所がない品目には地図を出さない。必要な人にだけ案内が出る。</p></div>
+        <div class="panel"><h3>断定しない</h3><p>持込が必要な品目は「家庭ごみで出せる」と言い切らず、公式情報の確認を促す。</p></div>
+        <div class="panel"><h3>持たない</h3><p>現在地は距離計算にだけ使い、DB・ファイル・ログのいずれにも保存しない。</p></div>
+      </div>
+      <div hidden class="note-src"><b>1:00</b>／上段は前スライドの4ステップと対応していることを明言する。下段3つは設計方針。「迷わせない・断定しない・持たない」の3語だけ覚えてもらうつもりで話す。</div>
+    </section>
+
+    <!-- 4 -->
+    <section class="slide" data-budget="60" data-sec="デモ1">
+      <p class="kicker"><b>04</b><span class="sec">画面 1 ／ 品目検索</span></p>
+      <div class="cols c2w grow">
+        <div class="mock">
+          <div class="bar"><span>CODIHA ／ ごみ品目をさがす</span><span class="mono">localhost:3000</span></div>
+          <div class="body">
+            <div class="field"><span>すまほ<i class="cursor"></i></span><span class="cnt">2,058件中 4件</span></div>
+            <div class="rows">
+              <div class="row hit"><span>スマートフォン</span><span class="yomi">すまーとふぉん</span></div>
+              <div class="row hit"><span>スマートウォッチ</span><span class="yomi">すまーとうぉっち</span></div>
+              <div class="row"><span>炊飯器</span><span class="yomi">すいはんき</span></div>
+              <div class="row"><span>スキャナー</span><span class="yomi">すきゃなー</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="stack">
+          <ul class="list">
+            <li>品目名と読み仮名の<b>部分一致</b>で検索<span>ひらがなだけ覚えていても辿り着ける</span></li>
+            <li>全角・半角、大文字・小文字、カタカナ・ひらがなの違いを吸収<span>NFKC正規化 → 小文字化 → カタカナをひらがなへ変換</span></li>
+            <li>検索語はSQLに直接連結せず、サーバー側で絞り込む</li>
+            <li>初期表示は読み仮名の50音順（<code>Intl.Collator('ja')</code>）</li>
+          </ul>
+          <p class="hint">※ 検索結果0件と「品目データ未登録」は別のメッセージで案内します。</p>
+        </div>
+      </div>
+      <div hidden class="note-src"><b>1:00</b>／ここから実機デモに切り替えてもよい箇所。「すまほ」と平仮名で打っても『スマートフォン』が出る、を実際に見せるのが一番速い。表記ゆれ吸収の実装（正規化3段）は一言で流す。</div>
+    </section>
+
+    <!-- 5 -->
+    <section class="slide" data-budget="60" data-sec="デモ2">
+      <p class="kicker"><b>05</b><span class="sec">画面 2 ／ 捨て方の表示と分岐</span></p>
+      <div class="cols c2w grow">
+        <div class="mock">
+          <div class="bar"><span>スマートフォン</span><span class="mono">/result?itemId=…</span></div>
+          <div class="body">
+            <dl class="kv">
+              <dt>分別区分</dt><dd>店舗回収協力店または小型家電</dd>
+              <dt>出し方</dt><dd>市役所・区役所・環境事業所・新浜リサイクルセンターなどの携帯電話・スマートフォン専用回収ボックスへ（電池は外す）</dd>
+            </dl>
+            <div class="btnrow"><span class="tag">携帯・タブレット・PC回収</span><span class="tag amber">持込が必要</span></div>
+          </div>
+        </div>
+        <div class="stack">
+          <div class="panel"><h3>回収場所を出すかどうかの判定</h3><p>品目に設定された3つの回収フラグ（充電池／携帯・タブレット・PC／その他小型家電）のいずれかが真のときだけ、位置情報の取得と地図表示を始めます。</p></div>
+          <ul class="list">
+            <li>すべて偽の品目では地図も施設一覧も出さない<span>例：ソファ、生ごみ — 位置情報の確認ダイアログも出ない</span></li>
+            <li>注意事項が空欄の品目では、その欄ごと表示しない</li>
+            <li>出し方が空欄なら、千葉市の公式ガイドの確認を案内</li>
+          </ul>
+        </div>
+      </div>
+      <div hidden class="note-src"><b>1:00</b>／「全品目に地図を出すのではない」が要点。2,058品目のうち回収区分が付いているのは89品目だけで、そこだけ位置情報を使う、と数字で言う。空欄の扱い（注意事項を出さない）は品質面の工夫として一言添える。</div>
+    </section>
+
+    <!-- 6 -->
+    <section class="slide" data-budget="75" data-sec="デモ3">
+      <p class="kicker"><b>06</b><span class="sec">画面 3 ／ 回収場所の案内</span></p>
+      <div class="cols c2w grow">
+        <div class="mock">
+          <div class="bar"><span>回収場所（現在地から近い順）</span><span class="mono">30件から抽出</span></div>
+          <div class="body">
+            <div class="site"><span class="rank">1</span><span>千葉市役所 1階ロビー<span class="meta">中央区千葉港1-1 ／ 平日9:00～17:00</span></span><span class="dist">1.2 km</span></div>
+            <div class="site"><span class="rank">2</span><span>中央区役所 総務課前<span class="meta">中央区中央4-5-1（きぼーる11階） ／ 平日9:00～17:00</span></span><span class="dist">2.4 km</span></div>
+            <div class="site"><span class="rank">3</span><span>中央・美浜環境事業所<span class="meta">中央区都町8-1-17 ／ 平日9:00～17:00、土曜9:00～12:00</span></span><span class="dist">4.8 km</span></div>
+            <div class="btnrow"><button class="btn solid" type="button" disabled>地図で見る</button><button class="btn" type="button" disabled>Googleマップで経路</button></div>
+          </div>
+        </div>
+        <div class="stack">
+          <ul class="list">
+            <li>その品目を受け入れる施設だけを抽出<span>回収種別のフラグをOR条件で照合</span></li>
+            <li>現在地からの直線距離をHaversine式で計算し、近い順に並べる<span>APIは小数第3位まで、画面は小数第1位まで</span></li>
+            <li>「地図で見る」で地図へスクロールし、ズーム16で吹き出しを開く<span>地図はLeaflet＋OpenStreetMap</span></li>
+            <li>「Googleマップで経路」は施設の緯度経度を目的地にして別タブで開く</li>
+          </ul>
+          <p class="hint">※ 表示は直線距離です。道路に沿った距離や所要時間は出しません。</p>
+        </div>
+      </div>
+      <div hidden class="note-src"><b>1:15</b>／デモの山場。実機なら位置情報を許可して、距離が付いて並び替わるところまで見せる。直線距離であること（道路距離ではない）は必ず口頭で断る。最後に「経路はGoogleマップに渡す」で締める。</div>
+    </section>
+
+    <!-- 7 -->
+    <section class="slide" data-budget="60" data-sec="構成">
+      <p class="kicker"><b>07</b><span class="sec">システム構成</span></p>
+      <h2>コマンド1つで、Webとデータベースが同時に立ち上がる</h2>
+      <div class="arch">
+        <div class="node host"><b>ブラウザ</b><span>Leaflet 1.9.4<br>OpenStreetMap<br>Geolocation API</span></div>
+        <div class="arrow"><span>⇄</span><small>HTTP</small></div>
+        <div class="node"><b>Webコンテナ</b><span>Node.js 20 / Express 5.2.1<br>EJSでHTMLを生成<br>回収場所API</span></div>
+        <div class="arrow"><span>⇄</span><small>mysql2</small></div>
+        <div class="node"><b>DBコンテナ</b><span>MySQL 8.4<br>item：2,058行<br>recycle_location：30行</span></div>
+      </div>
+      <div class="cols c2">
+        <div class="panel"><h3>起動</h3><p><code>docker compose up --build</code> を実行し、<code>http://localhost:3000</code> を開くだけ。初回はSQLとCSVからテーブルと初期データが自動登録されます。</p></div>
+        <div class="panel"><h3>テスト</h3><p>検索の正規化、距離計算、入力値の検証、各ルートの応答を <code>Application/test</code> の自動テストで確認しています。</p></div>
+      </div>
+      <div hidden class="note-src"><b>1:00</b>／審査員が自分で動かす前提の説明。「Docker Desktopがあれば1コマンド、初期データも自動で入ります」。矢印の向き（ブラウザ→Web→DB）をなぞりながら、地図だけは外部から読むのでネット接続が必要、と補足する。</div>
+    </section>
+
+    <!-- 8 -->
+    <section class="slide" data-budget="45" data-sec="工夫1">
+      <p class="kicker"><b>08</b><span class="sec">工夫 1 ／ 検索</span></p>
+      <h2>「思い出せる言葉」で引けるようにする</h2>
+      <div class="cols c2">
+        <div class="stack">
+          <div class="panel"><h3>入力の正規化（3段）</h3><p>NFKC正規化で全角と半角をそろえ、英字を小文字にし、カタカナをひらがなへ変換してから比較します。品目名と読み仮名の両方を対象にします。</p></div>
+          <p class="hint">品目名も読み仮名も同じ処理を通すため、どちらで覚えていても同じ結果になります。</p>
+        </div>
+        <div class="mock">
+          <div class="bar"><span>同じ品目にたどり着く入力例</span><span class="mono">→ スマートフォン</span></div>
+          <div class="body">
+            <div class="rows">
+              <div class="row"><span class="mono">すまーとふぉん</span><span class="yomi">読み仮名そのまま</span></div>
+              <div class="row"><span class="mono">スマートフォン</span><span class="yomi">カタカナ → ひらがなへ変換</span></div>
+              <div class="row"><span class="mono">ＰＣ</span><span class="yomi">全角 → 半角へ正規化</span></div>
+              <div class="row"><span class="mono">pc</span><span class="yomi">大文字 → 小文字へ</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div hidden class="note-src"><b>0:45</b>／短く。「ごみの品目名は正式名称を知らないことが多い」を前置きにして、右の表を2つだけ読み上げる。時間が押していたらこのスライドは30秒で切り上げてよい。</div>
+    </section>
+
+    <!-- 9 -->
+    <section class="slide" data-budget="45" data-sec="工夫2">
+      <p class="kicker"><b>09</b><span class="sec">工夫 2 ／ 位置情報</span></p>
+      <h2>現在地は、その場で使って、持ち帰らない</h2>
+      <div class="cols c2">
+        <ul class="list">
+          <li>取得するのは、回収場所がある品目の結果画面だけ<span>高精度測位は使わない／タイムアウト10秒／キャッシュ許容5分</span></li>
+          <li>座標はAPIへ一時的に送り、距離計算にだけ使用<span>MySQL・ファイル・ログのいずれにも書き込まない</span></li>
+          <li>拒否・タイムアウト・非対応でも、施設一覧は表示する</li>
+        </ul>
+        <div class="panel">
+          <h3>位置情報が取れないときの並び順</h3>
+          <p>区の固定順で並べ、区の中は施設の読み仮名順にします。距離と現在地マーカーは表示しません。</p>
+          <p class="mono" style="color:var(--green-deep); font-size:calc(var(--u)*.84)">稲毛区 → 中央区 → 花見川区 → 緑区 → 美浜区 → 若葉区</p>
+        </div>
+      </div>
+      <p class="verdict">位置情報を<b>許可しない人も同じ機能が使える</b>ことを前提に設計しています。許可は「近い順に並べ替える」ためだけの追加機能です。</p>
+      <div hidden class="note-src"><b>0:45</b>／プライバシーの話。「保存しない」は仕様として実装で担保していると言い切る。位置情報を断っても使える点は、審査で効くので必ず触れる。</div>
+    </section>
+
+    <!-- 10 -->
+    <section class="slide" data-budget="45" data-sec="工夫3">
+      <p class="kicker"><b>10</b><span class="sec">工夫 3 ／ 止めない設計</span></p>
+      <h2>何かが失敗しても、使える部分は残す</h2>
+      <div class="cols c3">
+        <div class="panel"><h3>地図が読めない</h3><p>施設一覧とGoogleマップの経路は使えるまま。「地図で見る」だけを無効化します。</p></div>
+        <div class="panel"><h3>施設APIが失敗</h3><p>施設欄だけにエラーと再試行を出し、品目の分別区分や出し方は画面に残します。</p></div>
+        <div class="panel"><h3>DBが落ちている</h3><p>内部のエラー内容は見せず、利用者向けの案内文と再試行だけを表示します。</p></div>
+      </div>
+      <div class="cols c2">
+        <div class="panel"><h3>状態を切り替えて確認できる</h3><p>読み込み中・0件・エラー・位置情報なしの各表示は、URLで直接呼び出して確認できます。</p><p class="mono" style="font-size:calc(var(--u)*.8)">/result?state=no-location</p></div>
+        <ul class="list">
+          <li>検索結果0件と、品目データ未登録を区別して案内</li>
+          <li>不正な品目IDは400、存在しない品目は404、取得失敗は500</li>
+        </ul>
+      </div>
+      <div hidden class="note-src"><b>0:45</b>／「オフラインや通信失敗は普通に起きる」前提で作った、という話。3枚のカードを順に読むだけでよい。state付きURLは、審査員がその場で壊れた状態を確認できる仕組みとして紹介する。</div>
+    </section>
+
+    <!-- 11 -->
+    <section class="slide" data-budget="30" data-sec="データ">
+      <p class="kicker"><b>11</b><span class="sec">データと範囲</span></p>
+      <div class="cols c2">
+        <div class="stack">
+          <h2>すべて千葉市の公開情報が出典</h2>
+          <ul class="list">
+            <li>千葉市 ごみ分別ガイド<span>品目名・分別区分・出し方・注意事項</span></li>
+            <li>千葉市 小型家電・充電式電池の回収案内<span>回収種別と対象品目89件</span></li>
+            <li>千葉市 公共施設位置情報<span>施設30件の住所・緯度経度</span></li>
+          </ul>
+        </div>
+        <div class="panel">
+          <h3>今回やらないと決めたこと</h3>
+          <ul class="list" style="margin-top:calc(var(--u)*.2)">
+            <li>道路に沿った距離・所要時間の計算</li>
+            <li>営業中／時間外、祝日、臨時休館の自動判定<span>利用時間はDBの文字列をそのまま表示</span></li>
+            <li>ログイン、管理画面、データの自動更新</li>
+          </ul>
+        </div>
+      </div>
+      <div hidden class="note-src"><b>0:30</b>／出典は「全部千葉市の公開情報です」と一言で。右側は、できないことを先に言っておくためのスライド。特に営業時間の自動判定をしていない点は質疑で必ず聞かれるので先に潰す。</div>
+    </section>
+
+    <!-- 12 -->
+    <section class="slide" data-budget="30" data-sec="まとめ">
+      <p class="kicker"><b>12</b><span class="sec">まとめ</span></p>
+      <h1>調べ終わった時点で、<br>もう行き先が決まっている。</h1>
+      <div class="cols c3">
+        <div class="panel"><h3>できたこと</h3><p>品目検索から回収場所の案内までを1つの流れにまとめました。</p></div>
+        <div class="panel"><h3>大事にしたこと</h3><p>位置情報を保存せず、許可しない人にも同じ情報が届く設計にしました。</p></div>
+        <div class="panel"><h3>次にやること</h3><p>所要時間の表示、開館情報の更新、公式データの取り込み自動化。</p></div>
+      </div>
+      <p class="credits"><span><b>チーム角煮</b></span><span>大久保壮葵・大菅海兎・梅澤颯太・薄井悠希</span><span class="mono">docker compose up --build → http://localhost:3000</span></p>
+      <div hidden class="note-src"><b>0:30</b>／最後は見出しの一文だけ読んで終える。時間が余っていれば「次にやること」を1つ具体的に足す。デモ機がある場合は、この画面のまま質疑に入る。</div>
+    </section>
+
+  </div>
+
+  <div class="pace">
+    <div class="segs" id="segs"><div class="marker" id="marker" style="left:0"></div></div>
+    <div class="controls">
+      <button class="ui" id="prev" type="button">←</button>
+      <button class="ui" id="next" type="button">→</button>
+      <span class="mono" id="counter">1 / 12</span>
+      <span id="section">タイトル</span>
+      <span class="spacer"></span>
+      <span id="lag">±0秒</span>
+      <span id="clock">10:00</span>
+      <button class="ui" id="timer" type="button" aria-pressed="false">開始</button>
+      <button class="ui" id="reset" type="button">リセット</button>
+      <button class="ui" id="notesBtn" type="button" aria-pressed="false">ノート</button>
+    </div>
+    <p class="hint">← → / Space：ページ送り　N：発表ノート　T：タイマー　R：リセット　F：全画面　（帯の黒い線が実時間、色分けが各ページの持ち時間）</p>
+  </div>
+
+  <div class="notes" id="notes" hidden></div>
+</div>
+
+<script>
+(function(){
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var budgets = slides.map(function(s){ return parseInt(s.dataset.budget, 10); });
+  var total = budgets.reduce(function(a,b){ return a+b; }, 0);
+  var starts = budgets.reduce(function(acc, b, i){ acc.push(i ? acc[i-1] + budgets[i-1] : 0); return acc; }, []);
+  var idx = 0, elapsed = 0, running = false, tick = null;
+
+  var segsEl = document.getElementById('segs');
+  var marker = document.getElementById('marker');
+  var counter = document.getElementById('counter');
+  var sectionEl = document.getElementById('section');
+  var clock = document.getElementById('clock');
+  var lag = document.getElementById('lag');
+  var notes = document.getElementById('notes');
+  var notesBtn = document.getElementById('notesBtn');
+  var timerBtn = document.getElementById('timer');
+  var stage = document.getElementById('stage');
+
+  var segEls = budgets.map(function(b, i){
+    var d = document.createElement('div');
+    d.className = 'seg'; d.style.flex = b + ' 0 0';
+    d.title = (i+1) + '. ' + slides[i].dataset.sec + '（' + b + '秒）';
+    segsEl.appendChild(d);
+    return d;
+  });
+
+  function mmss(s){
+    var neg = s < 0; s = Math.abs(s);
+    return (neg ? '-' : '') + Math.floor(s/60) + ':' + ('0' + (s%60)).slice(-2);
+  }
+
+  function render(){
+    slides.forEach(function(s, i){
+      if (i === idx) { s.setAttribute('data-current',''); } else { s.removeAttribute('data-current'); }
+    });
+    segEls.forEach(function(d, i){
+      d.className = 'seg' + (i < idx ? ' done' : i === idx ? ' now' : '');
+    });
+    counter.textContent = (idx+1) + ' / ' + slides.length;
+    sectionEl.textContent = slides[idx].dataset.sec;
+    var src = slides[idx].querySelector('.note-src');
+    notes.innerHTML = src ? src.innerHTML : '';
+    marker.style.left = Math.min(100, elapsed / total * 100) + '%';
+    var started = running || elapsed > 0;
+    var diff = Math.round(elapsed - starts[idx]);
+    lag.textContent = !started ? '未開始'
+      : (diff > 0 ? '+' : diff < 0 ? '−' : '±') + Math.abs(diff) + '秒';
+    lag.className = !started ? '' : diff > 20 ? 'behind' : diff < -20 ? 'ahead' : '';
+    lag.title = 'このページを話し始める予定時刻との差';
+    clock.textContent = mmss(total - Math.round(elapsed));
+    clock.className = elapsed > total ? 'over' : '';
+  }
+
+  function go(n){
+    idx = Math.max(0, Math.min(slides.length - 1, n));
+    if (!running && elapsed === 0 && idx > 0) start();
+    if (history.replaceState) history.replaceState(null, '', '#' + (idx + 1));
+    render();
+  }
+  function start(){
+    if (running) return;
+    running = true; timerBtn.textContent = '一時停止'; timerBtn.setAttribute('aria-pressed','true');
+    tick = setInterval(function(){ elapsed += 1; render(); }, 1000);
+  }
+  function pause(){
+    running = false; timerBtn.textContent = '再開'; timerBtn.setAttribute('aria-pressed','false');
+    clearInterval(tick);
+  }
+
+  document.getElementById('prev').onclick = function(){ go(idx-1); };
+  document.getElementById('next').onclick = function(){ go(idx+1); };
+  timerBtn.onclick = function(){ running ? pause() : start(); };
+  document.getElementById('reset').onclick = function(){
+    pause(); elapsed = 0; timerBtn.textContent = '開始'; go(0);
+  };
+  notesBtn.onclick = function(){
+    notes.hidden = !notes.hidden;
+    notesBtn.setAttribute('aria-pressed', String(!notes.hidden));
+  };
+
+  document.addEventListener('keydown', function(e){
+    if (e.target.tagName === 'INPUT' || e.metaKey || e.ctrlKey || e.altKey) return;
+    var k = e.key;
+    if (k === 'ArrowRight' || k === ' ' || k === 'PageDown'){ e.preventDefault(); go(idx+1); }
+    else if (k === 'ArrowLeft' || k === 'PageUp'){ e.preventDefault(); go(idx-1); }
+    else if (k === 'Home'){ go(0); }
+    else if (k === 'End'){ go(slides.length-1); }
+    else if (k === 'n' || k === 'N'){ notesBtn.click(); }
+    else if (k === 't' || k === 'T'){ timerBtn.click(); }
+    else if (k === 'r' || k === 'R'){ document.getElementById('reset').click(); }
+    else if (k === 'f' || k === 'F'){
+      if (document.fullscreenElement) document.exitFullscreen();
+      else document.documentElement.requestFullscreen && document.documentElement.requestFullscreen();
+    }
+  });
+
+  stage.addEventListener('click', function(e){
+    var r = stage.getBoundingClientRect();
+    go(idx + (e.clientX - r.left < r.width * 0.25 ? -1 : 1));
+  });
+
+  var fromHash = parseInt((location.hash || '').replace('#',''), 10);
+  if (fromHash >= 1 && fromHash <= slides.length) idx = fromHash - 1;
+  render();
+})();
+</script>
